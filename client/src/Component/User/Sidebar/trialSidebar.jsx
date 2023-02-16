@@ -18,7 +18,6 @@ import {
   AccordionHeader,
   AccordionBody,
 } from "@material-tailwind/react";
-import AddDepartment from "../Workspace/Add/addDepartment";
 
 export default function TrialSidebar() {
   function Icon({ id, open }) {
@@ -40,19 +39,17 @@ export default function TrialSidebar() {
   const [cookies, setCookies, removeCookies] = useCookies();
   const [open, setOpen] = useState(0);
   const [user, setUser] = useState();
+
+  const handleOpen = (value) => {
+    setOpen(open === value ? 0 : value);
+  };
   const [showList, setShowList] = useState(false);
-  const [showTask, setShowTask] = useState("-1");
-  const [addDepartment, setAddDepartment] = useState(false);
-  const [addProject, setAddProject] = useState(false);
-  const [departmentID, setDepartmentID] = useState("");
+  const [showTask, setShowTask] = useState("0");
   const [workspace, setWorkspace] = useState(
     JSON.parse(localStorage.getItem("Workspace"))
   );
   const history = useNavigate();
-  const handleOpen = (value) => {
-    setOpen(open === value ? 0 : value);
-  };
-
+  const [showModal, setShowModal] = useState(false);
   console.log({ workspace });
   return (
     <>
@@ -105,6 +102,11 @@ export default function TrialSidebar() {
                 </a>
               </li>
               <hr />
+              {/* <li>
+                <span className="flex-1 text-sm ml-3 whitespace-nowrap text-gray-500 font-bold">
+                  Workspace
+                </span>
+              </li> */}
               <li className="cursor-pointer" onClick={() => setShowTask("-1")}>
                 <span className="flex-1 text-sm ml-3 whitespace-nowrap text-gray-500 font-bold">
                   {workspace?.Name}
@@ -114,7 +116,7 @@ export default function TrialSidebar() {
                 <a
                   href="#"
                   className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
-                  onClick={() => setAddDepartment(true)}
+                  onClick={() => history("/addDepartment")}
                 >
                   <GrFormAdd size={20} />
                   <span className="flex-1  px-2 whitespace-nowrap font-medium lg:text-xs text-[9px] text-gray-500 uppercase">
@@ -147,10 +149,7 @@ export default function TrialSidebar() {
                         <a
                           href="#"
                           className="flex items-center  p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
-                          onClick={() => {
-                            setAddProject(true);
-                            setDepartmentID(data._id);
-                          }}
+                          onClick={() => history("/addDepartment")}
                         >
                           <GrFormAdd size={20} />
                           <span className="flex-1  px-2 whitespace-nowrap font-medium lg:text-xs text-[9px] text-gray-500 uppercase">
@@ -165,7 +164,7 @@ export default function TrialSidebar() {
                               href="#"
                               className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
                               onClick={() => {
-                                history("/department/list");
+                                history("/profile");
                               }}
                             >
                               <CgMoveTask size={20} />
@@ -241,25 +240,7 @@ export default function TrialSidebar() {
           </div>
         </aside>
       </div>
-      {addDepartment && (
-        <AddDepartment
-          button={"Create"}
-          nextLink={"department"}
-          activeStep={"Create Department"}
-          placeholder={"Enter Department Name"}
-          close={() => setAddDepartment(false)}
-        />
-      )}
-      {addProject && (
-        <AddDepartment
-          button={"Create"}
-          nextLink={"project"}
-          activeStep={"Create Project"}
-          placeholder={"Enter Project Name"}
-          departmentID={departmentID}
-          close={() => setAddProject(false)}
-        />
-      )}
+      {showModal && <CreateWorkspace close={() => setShowModal(false)} />}
     </>
   );
 }

@@ -8,7 +8,7 @@ export default function UserLogin() {
   const history = useNavigate();
   useEffect(() => {
     if (cookies.userJwt) {
-      history("/workspace");
+      history("/home");
     }
   });
   return (

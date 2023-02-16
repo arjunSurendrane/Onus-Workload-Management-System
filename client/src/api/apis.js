@@ -1,4 +1,3 @@
-import { GiConsoleController } from "react-icons/gi"
 import axios from "./index"
 
 export const addDepartment = async (id, cookie, data) => {
@@ -17,14 +16,23 @@ export const addDepartment = async (id, cookie, data) => {
 
 
 
-export const userDetails = async (cookie) => {
-    const res = await axios.get('/user/userDetails', {
-        headers: {
-            authorization: `Bearer ${cookie}`
-        }
-    })
-    console.log(res.data.data)
-    return res.data.data
+export const userAuthorization = async (data) => {
+    try {
+        const res = await axios.get('/user/isUserValid', {
+            headers: {
+                authorization: `Bearer ${data}`
+            }
+        })
+        console.log({ res })
+        return true
+    } catch (error) {
+        return false
+    }
+}
+
+export const fetchData = (namess) => {
+    console.log(namess)
+    return { name: 'workspace', namess }
 }
 
 

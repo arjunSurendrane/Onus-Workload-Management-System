@@ -67,6 +67,7 @@ export default function OtpVerification() {
       });
       if (res.data.status == "success") {
         setLoading(false);
+        localStorage.setItem("User", JSON.stringify({ ...res.data.data }));
         setCookie("userJwt", res.data.token, { path: "/" });
         history("/createWorkspace ");
       }

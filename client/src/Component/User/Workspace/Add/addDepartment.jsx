@@ -1,63 +1,73 @@
 import { Step, StepLabel, Stepper } from "@mui/material";
 import { Box } from "@mui/system";
-import axios from "../../../api/index";
-import React from "react";
+import axios from "../../../../api/index";
+import React, { useEffect } from "react";
 import { useState } from "react";
-import { useCookies } from "react-cookie";
-import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { addDepartment } from "../../../api/apis";
-import {
-  createWorkspace,
-  registerWorkspace,
-  workspaceDate,
-  fetchWorkspaceStatus,
-  updateDepartment,
-  updateProject,
-} from "../../../features/users/WorkspaceSlice";
-import Modal from "../Modal/Modal";
+import { useCookies } from "react-cookie";
 
-const steps = ["Create Workspace", "Create Department", "Create Project"];
-export default function CreateWorkspaces({
+export default function AddDepartment({
   activeStep,
   placeholder,
   button,
   nextLink,
+  close,
+  departmentID,
 }) {
-  const featchDataStatus = useSelector(fetchWorkspaceStatus);
-  const [cookie, setCookie] = useCookies();
   const [data, setData] = useState("");
   const [error, setError] = useState("");
-  const workspace = useSelector(workspaceDate);
+  const [cookies, setCookies] = useCookies();
+  const [workspace, setWorkspace] = useState(
+    JSON.parse(localStorage.getItem("Workspace"))
+  );
   const history = useNavigate();
-  const dispatch = useDispatch();
+  useEffect(() => {
+    return () => {
+      setError("");
+    };
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (activeStep == 2) {
-      dispatch(updateProject(data));
-      console.log({ workspace });
+    if (nextLink == "department") {
+      const res = await axios.patch(
+        `/workspace/addDepartment/${workspace._id}`,
+        { name: data },
+        { headers: { authorization: `Bearer ${cookies.userJwt}` } }
+      );
+      if (res.data.status == "success") {
+        console.log({ ...res.data.workspace });
+        localStorage.setItem(
+          "Workspace",
+          JSON.stringify({ ...res.data.workspace })
+        );
+        return close();
+      }
+      setError("Something gone wrong");
+      setTimeout(() => {
+        setError("");
+      }, 4000);
+    } else {
       const res = await axios.post(
-        "/workspace/create",
-        { ...workspace, projectName: data },
+        "/workspace/createProject",
+        { workspaceId: workspace._id, projectName: data, departmentID },
         {
-          headers: { authorization: `Bearer ${cookie.userJwt}` },
+          headers: { authorization: `Bearer ${cookies.userJwt}` },
         }
       );
       if (res.data.status == "success") {
-        localStorage.setItem("Workspace", JSON.stringify({ ...res.data.data }));
-        history("/home");
-      } else {
-        setError("something went wrong!!!");
+        localStorage.setItem(
+          "Workspace",
+          JSON.stringify({ ...res.data.workspace })
+        );
+        return close();
       }
-    } else if (activeStep == 1) {
-      dispatch(updateDepartment(data));
-      history(nextLink);
-    } else {
-      dispatch(createWorkspace(data));
-      history(nextLink);
+      setError("Something gone wrong");
+      setTimeout(() => {
+        setError("");
+      }, 4000);
     }
   };
-  console.log(workspace);
   const handleChange = (e) => {
     setData(e.target.value);
   };
@@ -70,11 +80,9 @@ export default function CreateWorkspaces({
               <div>
                 <Box sx={{ width: "100%" }}>
                   <Stepper activeStep={activeStep} alternativeLabel>
-                    {steps.map((label) => (
-                      <Step key={label}>
-                        <StepLabel>{label}</StepLabel>
-                      </Step>
-                    ))}
+                    <h1 className="mx-auto font-bold text-xl text-[#4f4299]">
+                      {activeStep}
+                    </h1>
                   </Stepper>
                 </Box>
               </div>

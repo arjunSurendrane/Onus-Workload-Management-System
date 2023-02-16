@@ -23,11 +23,14 @@ const INITIAL_STATE = {
     error: null
 }
 
-const userDetails = createSlice({
+const userDetailSlice = createSlice({
     name: 'UserDetails',
     initialState: INITIAL_STATE,
     reducers: {
-
+        createWorkspace(state, action) {
+            console.log({ data: action.payload })
+            state.userDetails = action.payload;
+        },
     },
     extraReducers(builders) {
         builders.addCase(fetchDetails.pending, (state, action) => {
@@ -45,7 +48,7 @@ const userDetails = createSlice({
     }
 })
 
-
+export const { createWorkspace } = userDetailSlice.actions
 export const userDetailsStatus = (state) => { state.UserDetails.status }
 export const userDetailsData = (state) => { state.UserDetails.userDetails }
-export default userDetails;
+export default userDetailSlice.reducer;

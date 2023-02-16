@@ -9,7 +9,7 @@ export const updateUser = async (email, updatedData) => {
 }
 
 
-export const findUserWithPassword = async (email) => {
+export const findUserWithEmail = async (email) => {
     return await User.findOne({ email }).select('+password');
 }
 

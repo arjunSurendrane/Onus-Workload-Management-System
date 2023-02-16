@@ -1,5 +1,6 @@
 import express from 'express';
 import { emailVerifiction, generateOtpForOtpLogin, login, sendEmail, signup, userDetails, verifyOtp } from '../controller/userAuth.js';
+import { isUserValid } from '../middleware/userAuth.js';
 const router = express.Router();
 
 
@@ -10,6 +11,7 @@ router.post('/emailVerifiction', sendEmail)
 router.post('/otpVerification', emailVerifiction)
 router.post('/otpLogin', generateOtpForOtpLogin)
 router.post('/verifyOtpLogin', verifyOtp)
+router.get('/isUserValid', isUserValid)
 router.get('/userDetails', userDetails)
 
 

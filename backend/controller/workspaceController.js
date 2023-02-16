@@ -32,11 +32,11 @@ export const createWorkspace = async (req, res) => {
             Lead: req.user._id,
             department: {
                 departmentName,
-                project: project._id
+                project: [{ projectId: project._id }]
             }
         })
         await Promise.all([project.save(), workspace.save()])
-        console.log({ workspace })
+        console.log({ workspace, project })
         successresponse(res, 200, workspace);
     } catch (error) {
         console.log(error)

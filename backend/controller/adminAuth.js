@@ -7,11 +7,6 @@ import { findAdmin } from "../services/Admin.js";
 
 
 
-
-
-
-
-
 export const adminLogin = async (req, res) => {
     const { email, password } = req.body
     const admin = await findAdmin(email);

@@ -2,7 +2,7 @@ import Workspace from "../models/workSpaceModal.js";
 
 
 export const findWorkspace = async () => {
-    return await Workspace.find().populate('Lead').populate('members.memberId')
+    return await Workspace.find().populate('Lead').populate('members.memberId').populate('department.project.projectId')
 }
 
 export const updateWorkspace = async (id, data) => {

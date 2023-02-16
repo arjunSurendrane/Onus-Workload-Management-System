@@ -6,7 +6,7 @@ import WelcomeImage from "../../../assets/undraw_welcome_cats_thqn.svg";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import axios from "../../../api/index";
-import { useNavigate } from "react-router-dom";
+import { json, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useCookies } from "react-cookie";
 import { CircularProgress, modalClasses } from "@mui/material";
@@ -16,10 +16,10 @@ import { Box } from "@mui/system";
 export default function Login() {
   //  declare
   const [error, setError] = useState("");
-  const history = useNavigate();
   const [cookies, setCookie] = useCookies(["user"]);
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const history = useNavigate();
 
   // create schema for form validation
   const schema = yup.object().shape({
@@ -41,8 +41,13 @@ export default function Login() {
     try {
       setLoading(true);
       const res = await axios.post("/user/login", data);
-      console.log(res.data.status);
       if (res.data.status === "success") {
+        console.log(res.data.data);
+        localStorage.setItem("User", JSON.stringify({ ...res.data.data.user }));
+        localStorage.setItem(
+          "Workspace",
+          JSON.stringify({ ...res.data.data.workspace })
+        );
         setCookie("userJwt", res.data.token, { path: "/" });
         history("/home");
         setLoading(false);

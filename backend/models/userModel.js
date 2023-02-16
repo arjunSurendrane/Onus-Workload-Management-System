@@ -21,9 +21,20 @@ const userSchema = new mongoose.Schema({
     Plan: {
         type: String,
         default: 'Free Plan'
-    }
-})
+    },
+    memberOf: [{
+        workspace: {
+            type: mongoose.Types.ObjectId,
+            ref: 'User'
+        }
+    }]
+}, { virtuals: true })
 
+
+userSchema.pre(/^find/, function (next) {
+    this.populate('memberOf.workspace')
+    next();
+})
 
 const User = mongoose.model('User', userSchema)
 export default User

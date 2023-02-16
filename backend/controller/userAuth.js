@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs'
 import otpGenerator from 'otp-generator'
 import Otp from "../models/otpVerification.js";
 import { GenerateMail } from "../services/Nodemailer.js";
-import { findUser, findUserWithPassword } from "../services/User.js";
+import { findUser, findUserWithEmail } from "../services/User.js";
 import Workspace from "../models/workSpaceModal.js";
 import jwt from 'jsonwebtoken';
 
@@ -40,13 +40,14 @@ export const login = async (req, res) => {
     try {
         console.log(req.body)
         const { email, password } = req.body
-        // const newUser = await User.findOne({ email }).select('+password')
-        const newUser = await findUserWithPassword(email);
+        const newUser = await findUserWithEmail(email);
         if (!newUser) return errorResponse(res, 401, 'user doesnot exist');
         console.log(newUser)
         const comparePassword = await bcrypt.compare(password, newUser.password);
         if (!comparePassword) return errorResponse(res, 401, 'incorrect password');
-        successresponse(res, 200, { name: newUser.name, email: newUser.email, _id: newUser._id })
+        const workspace = await Workspace.findOne({ Lead: newUser._id })
+        const data = { user: { name: newUser.name, email: newUser.email, _id: newUser._id, plan: newUser.Plan, block: newUser.block, memberOf: newUser.memberOf }, workspace, _id: newUser._id }
+        successresponse(res, 200, data)
     } catch (err) {
         errorResponse(res, 401, `error ${err}`)
     }
@@ -159,7 +160,7 @@ export const verifyOtp = async (req, res) => {
 // get user Details
 export const userDetails = async (req, res) => {
     try {
-        console.log(req.headers.authorization)
+        console.log({ details: req.headers.authorization })
         const decode = await jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET)
         console.log({ decode })
         const response = await Workspace.findOne({ Lead: decode.id })
