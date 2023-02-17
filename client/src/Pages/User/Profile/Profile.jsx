@@ -15,7 +15,6 @@ export default function Profile() {
   });
   return (
     <div>
-      <Sidebar />
       <Navbar heading={"Profile"} active={"h"} />
       <div className="md:mx-[18%] absolute items-center">
         <ProfileView user={{ name: "Arjun" }} />

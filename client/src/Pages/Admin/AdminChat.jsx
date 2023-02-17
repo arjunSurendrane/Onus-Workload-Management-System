@@ -5,7 +5,6 @@ import AdminSidebar from "../../Component/Admin/Sidebar/AdminSidebar";
 export default function AdminChat() {
   return (
     <div>
-      <AdminSidebar />
       <div className="md:mx-[18%] absolute items-center">
         <AdminChatComponent />
       </div>

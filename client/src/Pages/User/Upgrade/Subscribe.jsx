@@ -6,7 +6,6 @@ import UpgradePage from "../../../Component/User/Subscribe/UpgradePage";
 export default function Subscribe() {
   return (
     <div>
-      <Sidebar />
       <Navbar heading={"Subscribe"} active={"h"} />
       <div className="md:mx-[18%] absolute items-center">
         <UpgradePage />

@@ -17,7 +17,6 @@ export default function DepartmentList() {
   });
   return (
     <div>
-      <Sidebar />
       <Navbar
         heading={"List"}
         secHeading={"board"}

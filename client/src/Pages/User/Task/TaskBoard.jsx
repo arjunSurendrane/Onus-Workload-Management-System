@@ -16,7 +16,6 @@ export default function TaskBoard() {
   });
   return (
     <div>
-      <Sidebar />
       <Navbar
         heading={"List"}
         secHeading={"board"}

@@ -7,7 +7,6 @@ import CreateWorkspaces from "../../../Component/User/Workspace/createWorkspace"
 export default function CreateDepartment() {
   return (
     <div>
-      <Sidebar />
       <Navbar />
       <CreateWorkspaces
         activeStep={1}

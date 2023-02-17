@@ -15,7 +15,6 @@ export default function Notification() {
   });
   return (
     <div>
-      <Sidebar />
       <Navbar heading={"Notification"} active={"h"} />
       <div className="md:mx-[18%] absolute items-center">
         <Notifications />

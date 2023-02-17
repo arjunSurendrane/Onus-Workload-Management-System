@@ -15,7 +15,6 @@ export default function Chat() {
   });
   return (
     <div>
-      <Sidebar />
       <Navbar heading={"Chat"} active={"h"} />
       <div className="md:mx-[18%] absolute items-center">
         <ChatScreen />

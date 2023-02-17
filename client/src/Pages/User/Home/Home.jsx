@@ -18,7 +18,6 @@ export default function Home() {
   });
   return (
     <div>
-      <Sidebar />
       <Navbar heading={"Home"} active={"h"} />
       <div className="md:mx-[18%] absolute">
         <LineUp />

@@ -15,7 +15,6 @@ export default function LeaderBoard() {
   });
   return (
     <div>
-      <Sidebar />
       <Navbar heading={"LeaderBoard"} active={"h"} />
       <div className="md:mx-[18%] absolute items-center">
         <UserLeaderBoard />
