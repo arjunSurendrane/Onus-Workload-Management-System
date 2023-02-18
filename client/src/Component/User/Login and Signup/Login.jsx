@@ -12,6 +12,7 @@ import { useCookies } from "react-cookie";
 import { CircularProgress, modalClasses } from "@mui/material";
 import Modal from "../Modal/Modal";
 import { Box } from "@mui/system";
+import { createUser } from "../../../features/users/userSlice";
 
 export default function Login() {
   //  declare
@@ -42,7 +43,7 @@ export default function Login() {
       setLoading(true);
       const res = await axios.post("/user/login", data);
       if (res.data.status === "success") {
-        console.log(res.data.data);
+        console.log(res.data.data.user);
         localStorage.setItem("User", JSON.stringify({ ...res.data.data.user }));
         localStorage.setItem(
           "Workspace",
@@ -53,7 +54,7 @@ export default function Login() {
         setLoading(false);
       }
     } catch (error) {
-      console.log(error.response.data);
+      console.log(error);
       if (error?.response?.data?.status == "fail") {
         setError(error?.response?.data?.error);
         setLoading(false);

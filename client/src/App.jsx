@@ -7,10 +7,23 @@ import UserLogin from "./Pages/User/Login/userLogin";
 import UserSignup from "./Pages/User/Signup/userSignup";
 import AdminLoginPage from "./Pages/Admin/login";
 import { useCookies } from "react-cookie";
-import AdminRoutes from "./routes/User/adminRoutes";
-import UserRoutes from "./routes/Admin/userRoutes";
+import AdminRoutes from "./routes/Admin/adminRoutes";
+import UserRoutes from "./routes/User/userRoutes";
+import axios from "./api/index";
+import { userAuthorization } from "./api/apis";
 
 function App() {
+  const [cookies, setCookies] = useCookies();
+  useEffect(() => {
+    let res;
+    if (cookies.userJwt) {
+      res = userAuthorization(cookies.userJwt);
+    }
+    if (!res) {
+      localStorage.removeItem("Workspace");
+      localStorage.removeItem("User");
+    }
+  }, []);
   return (
     <div>
       <Routes>

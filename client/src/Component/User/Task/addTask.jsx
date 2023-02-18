@@ -1,8 +1,19 @@
 import React from "react";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 
 export default function AddTask({ setShowModal }) {
-  const { register, handleSubmit } = useForm();
+  const schema = yup.object().shape({
+    TaskName: yup.string().required(),
+    dueDate: yup.string().required(),
+    Discription: yup.string().min(4).required(),
+  });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({ resolver: yupResolver(schema) });
   const onSubmit = (data) => {
     console.log(data);
   };
@@ -23,62 +34,87 @@ export default function AddTask({ setShowModal }) {
             <div className="relative p-6 flex-auto mb-5">
               <form onSubmit={handleSubmit(onSubmit)}>
                 <div>
-                  <label
-                    htmlFor="email-address"
-                    className="mt-3 text-sm font-medium"
-                  >
-                    Task Name
-                  </label>
                   <input
                     id="email-address"
                     name="TaskName"
                     type="text"
-                    required
                     autoComplete="email"
-                    className="relative text-center mt-5 block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                    className={`relative text-center mt-5 block w-full appearance-none rounded-none rounded-t-md border px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10  focus:outline-none focus:ring-indigo-500 sm:text-sm ${
+                      errors?.TaskName?.message
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-indigo-500"
+                    }`}
                     placeholder="Task Name "
                     {...register("TaskName")}
                   />
+
                   <label
-                    htmlFor="dueDate"
-                    className=" text-sm mt-3 font-medium"
+                    htmlFor="TaskName"
+                    className={` text-sm mt-3 font-medium ${
+                      errors.TaskName?.message && "text-red-500"
+                    }`}
                   >
-                    Due Date
+                    {errors.TaskName?.message
+                      ? `${errors.TaskName?.message}`
+                      : "Task Name"}
                   </label>
 
                   <input
                     id="dueDate"
                     name="dueDate"
                     type="date"
-                    required
-                    className="relative text-center mt-5 block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                    className={`relative text-center mt-5 block w-full appearance-none rounded-none rounded-t-md border px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10  focus:outline-none focus:ring-indigo-500 sm:text-sm ${
+                      errors?.dueDate?.message
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-indigo-500"
+                    }`}
                     placeholder="Due Date "
                     {...register("dueDate")}
                   />
+
                   <label
                     htmlFor="dueDate"
-                    className=" text-sm mt-3 font-medium"
+                    className={` text-sm mt-3 font-medium ${
+                      errors.dueDate?.message && "text-red-500"
+                    }`}
                   >
-                    Discription
+                    {errors.dueDate?.message
+                      ? `${errors.dueDate?.message}`
+                      : "Due Date"}
                   </label>
+
                   <textarea
                     id="Discription"
                     name="Discription"
                     type="text"
-                    required
-                    className="relative text-center mt-5 block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                    className={`relative text-center mt-5 block w-full appearance-none rounded-none rounded-t-md border px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10  focus:outline-none focus:ring-indigo-500 sm:text-sm ${
+                      errors?.Discription?.message
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-indigo-500"
+                    }`}
                     placeholder="Add Description"
                     {...register("Discription")}
                   />
-                  <label htmlFor="" className=" text-sm mt-3 font-medium">
-                    Attachments
+                  <label
+                    htmlFor="Discription"
+                    className={` text-sm mt-3 font-medium ${
+                      errors.Discription?.message && "text-red-500"
+                    }`}
+                  >
+                    {errors.Discription?.message
+                      ? `${errors.Discription?.message}`
+                      : "Discription"}
                   </label>
+
                   <input
                     name="file"
                     type="file"
                     className="relative text-center mt-5 block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                     {...register("file")}
                   />
+                  <label htmlFor="" className=" text-sm mt-3 font-medium">
+                    Attachments
+                  </label>
                   <p className="text-red-500 text-sm font-medium"></p>
                 </div>
                 <div className="mt-5">

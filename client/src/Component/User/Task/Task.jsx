@@ -9,7 +9,7 @@ import { CiEdit } from "react-icons/ci";
 import { Avatar } from "@mui/material";
 import { useForm } from "react-hook-form";
 
-export default function Task({ setShowModal }) {
+export default function Task({ setShowModal, taskData }) {
   const { register, handleSubmit } = useForm();
   const [attachment, setAttachment] = useState([]);
   const onSubmit = (data) => {
@@ -48,7 +48,9 @@ export default function Task({ setShowModal }) {
                           id=""
                           className=" py-2 px-2 h-8 bg-gray-400 rounded-l"
                         >
-                          <p className="text-xs text-white">IN PROGRESS</p>
+                          <p className="text-xs text-white">
+                            {taskData?.status}
+                          </p>
                         </div>
                         <div
                           id=""
@@ -109,7 +111,7 @@ export default function Task({ setShowModal }) {
                     </div>
                     <div className="text-center">
                       <p className="text-[10px]  font-medium text-gray-500">
-                        22/04/2023
+                        {taskData.dueDate.split("T")[0]}
                       </p>
                     </div>
                   </div>
@@ -117,13 +119,9 @@ export default function Task({ setShowModal }) {
               </div>
               <div className="flex justify-between px-10 py-10 max-h-[600px] overflow-y-scroll overflow-x-clip">
                 <div className="w-[50%] border-r-2 px-3">
-                  <h1 className="text-2xl">Task Name</h1>
+                  <h1 className="text-2xl">{taskData?.taskName}</h1>
                   <div className="mt-5">
-                    <p>
-                      Lorem Ipsum is simply dummy text of the printing and
-                      typesetting industry. Lorem Ipsum has been the industry's
-                      standard dummy text ever since the 1500s, when an unknown
-                    </p>
+                    <p>{taskData?.description}</p>
                   </div>
                   <div className="mt-5 w-full border-2 border-dotted rounded  text-center py-2 cursor-pointer">
                     <p className="text-sm">+ Add Subtask</p>

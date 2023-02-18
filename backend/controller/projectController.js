@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Project from "../models/projectModal.js";
 import Workspace from "../models/workSpaceModal.js";
 
@@ -29,4 +30,35 @@ export const createProject = async (req, res) => {
       error,
     });
   }
+};
+
+export const projects = async (req, res) => {
+  const projectID = req.params.id;
+  console.log(projectID);
+  const projects = await Project.aggregate([
+    [
+      {
+        $match: {
+          _id: mongoose.Types.ObjectId("63ee28395da037558c752630"),
+        },
+      },
+      {
+        $lookup: {
+          from: "tasks",
+          localField: "task.taskName",
+          foreignField: "_id",
+          as: "taskData",
+        },
+      },
+      {
+        $group: {
+          _id: "$taskData.status",
+          data: { $push: "$$ROOT" },
+        },
+      },
+    ],
+  ]);
+  res.json({
+    projects,
+  });
 };

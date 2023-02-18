@@ -19,6 +19,8 @@ import {
   AccordionBody,
 } from "@material-tailwind/react";
 import AddDepartment from "../Workspace/Add/addDepartment";
+import { useDispatch } from "react-redux";
+import { createProjectId } from "../../../features/users/Project";
 
 export default function TrialSidebar() {
   function Icon({ id, open }) {
@@ -40,6 +42,7 @@ export default function TrialSidebar() {
   const [cookies, setCookies, removeCookies] = useCookies();
   const [open, setOpen] = useState(0);
   const [user, setUser] = useState();
+  const dispatch = useDispatch();
   const [showList, setShowList] = useState(false);
   const [showTask, setShowTask] = useState("-1");
   const [addDepartment, setAddDepartment] = useState(false);
@@ -52,7 +55,10 @@ export default function TrialSidebar() {
   const handleOpen = (value) => {
     setOpen(open === value ? 0 : value);
   };
-
+  const handleChange = (id) => {
+    dispatch(createProjectId(id));
+    history("/department/list");
+  };
   console.log({ workspace });
   return (
     <>
@@ -165,7 +171,7 @@ export default function TrialSidebar() {
                               href="#"
                               className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
                               onClick={() => {
-                                history("/department/list");
+                                handleChange(data.projectId._id);
                               }}
                             >
                               <CgMoveTask size={20} />

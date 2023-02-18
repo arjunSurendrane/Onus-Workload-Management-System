@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import Task from "../../client/src/Component/User/Task/Task";
 
 const taskSchema = new mongoose.Schema({
   taskName: String,
@@ -7,6 +6,14 @@ const taskSchema = new mongoose.Schema({
   Assigned: {
     type: mongoose.Types.ObjectId,
     ref: "User",
+  },
+  createdBy: {
+    type: mongoose.Types.ObjectId,
+    ref: "User",
+  },
+  projectID: {
+    type: mongoose.Types.ObjectId,
+    ref: "Project",
   },
   createdDate: Date,
   status: {
@@ -25,6 +32,15 @@ const taskSchema = new mongoose.Schema({
   ],
   attachedfiles: [{ link: String }],
 });
+
+taskSchema.virtual("project", {
+  ref: "projects",
+  localField: "task.taskName",
+  foreignField: "_id",
+});
+
+taskSchema.set("toObject", { virtuals: true });
+taskSchema.set("toJSON", { virtuals: true });
 
 const Task = mongoose.model("Task", taskSchema);
 export default Task;

@@ -21,6 +21,7 @@ import UserSignup from "../../Pages/User/Signup/userSignup";
 import OtpPage from "../../Pages/User/Login/OtpPage";
 import ForgotPassword from "../../Pages/User/Login/forgotPasswordOtp";
 import LandingPage from "../../Pages/User/LandingPage/LandingPage";
+import UserOutlet from "./userOutlet";
 
 export default function UserRoutes() {
   return (
