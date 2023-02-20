@@ -5,7 +5,6 @@ import LineUp from "../../../Component/User/Home/LineUp";
 import MyWork from "../../../Component/User/Home/MyWork";
 import Navbar from "../../../Component/User/Navbar/Navbar";
 import Sidebar from "../../../Component/User/Sidebar/Sidebar";
-import TrialSidebar from "../../../Component/User/Sidebar/trialSidebar";
 
 export default function Home() {
   const [cookies, setCookie] = useCookies();

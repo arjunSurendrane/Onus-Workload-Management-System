@@ -1,6 +1,9 @@
 import Task from "../models/taskModal.js";
 import { groupTasks } from "../services/Task.js";
 import { updateProjectWithTaskData } from "../services/Project.js";
+import { uploadFile } from '../utils/s3.js'
+
+
 
 // group all task with its status
 export const getAllTask = async (req, res) => {
@@ -22,9 +25,10 @@ export const getAllTask = async (req, res) => {
 // create task
 export const createTask = async (req, res) => {
   try {
-    const { projectId, taskName, description, date, link } = req.body;
-    const dueDate = new Date(Date.now());
-    console.log(dueDate, date);
+    const { projectId, taskName, description, dueDate } = req.body;
+    const uploadResult = await uploadFile(req.file)
+    console.log({ uploadResult })
+    const link = uploadResult.Key;
     const newTask = new Task({
       taskName, description, dueDate, attachedfiles: [{ link }],
       createdBy: req.user._id, projectID: projectId,
@@ -38,6 +42,7 @@ export const createTask = async (req, res) => {
       task,
       project,
     });
+
   } catch (error) {
     console.log(error);
     res.status(404).json({

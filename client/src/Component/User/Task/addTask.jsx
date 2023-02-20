@@ -2,20 +2,37 @@ import React from "react";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
+import { addTask } from "../../../api/apis";
+import { useCookies } from "react-cookie";
+import { useSelector } from "react-redux";
+import { fetchProductId } from "../../../features/users/Project";
+import { useNavigate } from "react-router-dom";
 
-export default function AddTask({ setShowModal }) {
+export default function AddTask({ setShowModal, reloadData }) {
+  const [cookies, setCookies] = useCookies();
+  const projectId = useSelector(fetchProductId);
+  const navigate = useNavigate();
+
   const schema = yup.object().shape({
-    TaskName: yup.string().required(),
-    dueDate: yup.string().required(),
-    Discription: yup.string().min(4).required(),
+    taskName: yup.string().required(),
+    dueDate: yup.date().required(),
+    Description: yup.string().min(4).required(),
   });
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({ resolver: yupResolver(schema) });
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     console.log(data);
+    const res = await addTask({
+      cookie: cookies.userJwt,
+      data: { ...data, projectId },
+    });
+    console.log({ task: res });
+    if (res.data.status == "success") {
+      setShowModal();
+    }
   };
   return (
     <div>
@@ -36,26 +53,26 @@ export default function AddTask({ setShowModal }) {
                 <div>
                   <input
                     id="email-address"
-                    name="TaskName"
+                    name="taskName"
                     type="text"
                     autoComplete="email"
                     className={`relative text-center mt-5 block w-full appearance-none rounded-none rounded-t-md border px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10  focus:outline-none focus:ring-indigo-500 sm:text-sm ${
-                      errors?.TaskName?.message
+                      errors?.taskName?.message
                         ? "border-red-500 focus:border-red-500"
                         : "border-gray-300 focus:border-indigo-500"
                     }`}
                     placeholder="Task Name "
-                    {...register("TaskName")}
+                    {...register("taskName")}
                   />
 
                   <label
-                    htmlFor="TaskName"
+                    htmlFor="taskName"
                     className={` text-sm mt-3 font-medium ${
-                      errors.TaskName?.message && "text-red-500"
+                      errors.taskName?.message && "text-red-500"
                     }`}
                   >
-                    {errors.TaskName?.message
-                      ? `${errors.TaskName?.message}`
+                    {errors.taskName?.message
+                      ? `${errors.taskName?.message}`
                       : "Task Name"}
                   </label>
 
@@ -84,36 +101,36 @@ export default function AddTask({ setShowModal }) {
                   </label>
 
                   <textarea
-                    id="Discription"
-                    name="Discription"
+                    id="Description"
+                    name="Description"
                     type="text"
                     className={`relative text-center mt-5 block w-full appearance-none rounded-none rounded-t-md border px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10  focus:outline-none focus:ring-indigo-500 sm:text-sm ${
-                      errors?.Discription?.message
+                      errors?.Description?.message
                         ? "border-red-500 focus:border-red-500"
                         : "border-gray-300 focus:border-indigo-500"
                     }`}
                     placeholder="Add Description"
-                    {...register("Discription")}
+                    {...register("Description")}
                   />
                   <label
-                    htmlFor="Discription"
+                    htmlFor="Description"
                     className={` text-sm mt-3 font-medium ${
-                      errors.Discription?.message && "text-red-500"
+                      errors.Description?.message && "text-red-500"
                     }`}
                   >
-                    {errors.Discription?.message
-                      ? `${errors.Discription?.message}`
-                      : "Discription"}
+                    {errors.Description?.message
+                      ? `${errors.Description?.message}`
+                      : "Description"}
                   </label>
 
                   <input
                     name="file"
                     type="file"
                     className="relative text-center mt-5 block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                    {...register("file")}
+                    {...register("file", { required: true })}
                   />
                   <label htmlFor="" className=" text-sm mt-3 font-medium">
-                    Attachments
+                    Attachment
                   </label>
                   <p className="text-red-500 text-sm font-medium"></p>
                 </div>

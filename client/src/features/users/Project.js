@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 
 const INITIAL_STATE = {
-    projectID: ""
+    projectID: localStorage.getItem('ProjectId') || ""
 }
 
 const projectSlice = createSlice({

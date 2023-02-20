@@ -1,13 +1,19 @@
-import { Outlet, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { Navigate, Outlet, useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
+import { useEffect } from "react";
 
 function UserOutlet() {
+  const [cookies, setCookies] = useCookies();
   const navigate = useNavigate();
-  const data = useSelector((state) => state.user.user);
-  if (data.admin) {
+  useEffect(() => {
+    if (!cookies.userJwt) {
+      return <Navigate to="/login" />;
+    }
+  }, []);
+  if (cookies.userJwt) {
+    console.log("userOutlet");
     return <Outlet />;
   }
-  return navigate("/");
 }
 
 export default UserOutlet;

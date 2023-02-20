@@ -22,18 +22,14 @@ import OtpPage from "../../Pages/User/Login/OtpPage";
 import ForgotPassword from "../../Pages/User/Login/forgotPasswordOtp";
 import LandingPage from "../../Pages/User/LandingPage/LandingPage";
 import UserOutlet from "./userOutlet";
+import ErrorPage from "../../Pages/User/PageNotFound/errorPage.jsx";
 
 export default function UserRoutes() {
   return (
     <div>
       <Sidebar />
-
       <Routes>
         <Route path="/">
-          <Route path="login" element={<UserLogin />} />
-          <Route path="signup" element={<UserSignup />} />
-          <Route path="otpVerification" element={<OtpPage />} />
-          <Route path="forgotPassword" element={<ForgotPassword />} />
           <Route path="home" element={<Home />} />
           <Route path="notification" element={<Notification />} />
           <Route path="online" element={<Online />} />

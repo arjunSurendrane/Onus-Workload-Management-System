@@ -38,7 +38,29 @@ export const userAuthorization = async (data) => {
         console.log({ res })
         return true
     } catch (error) {
+        localStorage.clear()
         return false
+    }
+}
+
+
+export const addTask = async ({ cookie, data }) => {
+    try {
+        console.log(cookie, data)
+        const formData = new FormData();
+        formData.append('taskName', data.taskName);
+        formData.append('projectId', data.projectId);
+        formData.append('description', data.Description);
+        formData.append('dueDate', data.dueDate);
+        formData.append('attachedFile', data.file[0]);
+        const res = await axios.post('/workspace/createTask', formData, {
+            headers: { authorization: `Bearer ${cookie}` }
+        })
+        console.log(res)
+        return res
+    } catch (error) {
+        console.log(error)
+        return error
     }
 }
 

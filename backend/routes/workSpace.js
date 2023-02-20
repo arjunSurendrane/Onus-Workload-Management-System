@@ -11,6 +11,8 @@ import {
   createWorkspace,
   getWorkspace,
 } from "../controller/workspaceController.js";
+import multer from 'multer'
+const upload = multer({ dest: './assets/files' })
 const router = express.Router();
 
 // router.use(isUser)
@@ -20,7 +22,7 @@ router.patch("/addDepartment/:id", addDepartment);
 router.post("/createProject", createProject);
 router.get("/getData", getWorkspace);
 router.get("/tasks/:id", getAllTask);
-router.post("/createTask", createTask);
+router.post("/createTask", upload.single('attachedFile'), createTask);
 router.get("/projects/:id", projects);
 router.get("/alltasks", allTasks);
 
