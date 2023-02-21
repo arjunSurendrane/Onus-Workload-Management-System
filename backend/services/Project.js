@@ -1,27 +1,35 @@
 import Project from "../models/taskModal.js";
+import { getOrSetFunction, updateCacheMemory } from "../redis/redisFunction.js";
 
 export const AllProjects = async () => {
-  return await Project.find();
+  const data = await getOrSetFunction('tasks', () => { return Project.find(); })
+  return data
 };
 
 export const FindOneProject = async (id) => {
-  return await Project.findById(id);
+  const data = await getOrSetFunction(`project-${id}`, () => { return Project.findById(id); })
+  return data
 };
 
 export const UpdateProject = async (id, data) => {
-  return await Project.findByIdAndUpdate(id, data, { new: true });
+  const res = await Project.findByIdAndUpdate(id, data, { new: true });
+  updateCacheMemory(`project-${id}`, res)
+  return res
 };
 
 export const DeleteProject = async (id) => {
+  updateCacheMemory(`project-${id}`, null)
   return await Project.findByIdAndDelete(id);
 };
 
 export const updateProjectWithTaskData = async (projectId, newTask) => {
-  return await Project.findByIdAndUpdate(
+  const data = await Project.findByIdAndUpdate(
     projectId,
     {
       $push: { task: { taskName: newTask._id } },
     },
     { new: true }
   );
+  updateCacheMemory(`project-${projectId}`, data)
+  return data
 };

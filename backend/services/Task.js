@@ -1,20 +1,23 @@
 import mongoose from "mongoose";
 import Task from "../models/taskModal.js";
+import { getOrSetFunction } from "../redis/redisFunction.js";
 
 export const groupTasks = async (projectID) => {
-  const res = await Task.aggregate([
-    {
-      $match: {
-        projectID: mongoose.Types.ObjectId(`${projectID}`),
+  const data = await getOrSetFunction(`groupedTask-${projectID}`, () => {
+    return Task.aggregate([
+      {
+        $match: {
+          projectID: mongoose.Types.ObjectId(`${projectID}`),
+        },
       },
-    },
-    {
-      $group: {
-        _id: "$status",
-        data: { $push: "$$ROOT" },
+      {
+        $group: {
+          _id: "$status",
+          data: { $push: "$$ROOT" },
+        },
       },
-    },
-  ]);
-  console.log(res);
-  return res;
+    ]);
+  })
+  console.log(data);
+  return data;
 };

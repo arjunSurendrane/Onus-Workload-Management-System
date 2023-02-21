@@ -16,3 +16,11 @@ export async function getOrSetFunction(key, cb) {
     return fetchData;
 }
 
+
+// update data
+export async function updateCacheMemory(key, data) {
+    const redisClient = await connectToRedis()
+    const res = await redisClient.setEx(key, 3600, JSON.stringify(data))
+    return res
+}
+

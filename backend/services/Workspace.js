@@ -1,12 +1,11 @@
 import Workspace from "../models/workSpaceModal.js";
-import { getOrSetFunction } from "../redis/redisFunction.js";
+import { getOrSetFunction, updateCacheMemory } from "../redis/redisFunction.js";
 
 
 export const findWorkspace = async () => {
     try {
         console.log('compiler at findWorkspace')
         const data = await getOrSetFunction('workspaces', () => { return Workspace.find().populate('Lead').populate('members.memberId').populate('department.project.projectId') })
-        console.log({ data })
         return data
     } catch (error) {
         console.log(error)
@@ -16,7 +15,9 @@ export const findWorkspace = async () => {
 }
 
 export const updateWorkspace = async (id, data) => {
-    return await Workspace.findByIdAndUpdate(id, data, { new: true }, { upsert: true });
+    const res = await Workspace.findByIdAndUpdate(id, data, { new: true }, { upsert: true });
+    updateCacheMemory(`workspace-${res._id}`, res)
+    return res
 }
 
 
@@ -26,6 +27,7 @@ export const addDepartmentIntoWorkspace = async (id, data) => {
             department: { departmentName: data }
         }
     }, { new: true, upsert: true });
+    updateCacheMemory(`workspace-${data._id}`, data)
     console.log({ res })
     return res
 }
