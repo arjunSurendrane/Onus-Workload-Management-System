@@ -20,31 +20,19 @@ export default function DepartmentList() {
       history("/");
     }
   });
-  const {
-    isLoading,
-    error,
-    data: tasks,
-  } = useSWR({ id: productID, cookies: cookies.userJwt }, fetchTask);
-  if (isLoading) {
-    console.log("loading...");
-  } else if (error) {
-    console.log("error");
-  } else {
-    console.log("data");
-    console.log({ tasks });
-    return (
-      <div>
-        <Navbar
-          heading={"List"}
-          secHeading={"board"}
-          thirdHeading={"calender"}
-          active={"h"}
-        />
-        <div className="md:mx-[18%] absolute items-center">
-          <List tasks={tasks} />
-        </div>
-        <MenuButton />
+
+  return (
+    <div>
+      <Navbar
+        heading={"List"}
+        secHeading={"board"}
+        thirdHeading={"calender"}
+        active={"h"}
+      />
+      <div className="md:mx-[18%] absolute items-center">
+        <List />
       </div>
-    );
-  }
+      <MenuButton />
+    </div>
+  );
 }

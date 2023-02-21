@@ -4,6 +4,7 @@ import {
   allTasks,
   createTask,
   getAllTask,
+  streamAttachedFile,
 } from "../controller/taskController.js";
 import {
   addDepartment,
@@ -25,5 +26,6 @@ router.get("/tasks/:id", getAllTask);
 router.post("/createTask", upload.single('attachedFile'), createTask);
 router.get("/projects/:id", projects);
 router.get("/alltasks", allTasks);
+router.get('/task/attachedFile/:key', streamAttachedFile)
 
 export default router;

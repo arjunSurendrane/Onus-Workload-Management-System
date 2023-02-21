@@ -33,3 +33,12 @@ export const uploadFile = (file) => {
 
 
 // download data from aws s3
+
+export const getFileStream = (fileKey) => {
+    const { bucketName, s3 } = credentials()
+    const downloadParams = {
+        Key: fileKey,
+        bucket: bucketName
+    }
+    return s3.getObject(downloadParams).createReadStream()
+}

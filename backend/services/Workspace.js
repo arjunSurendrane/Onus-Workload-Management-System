@@ -1,8 +1,18 @@
 import Workspace from "../models/workSpaceModal.js";
+import { getOrSetFunction } from "../redis/redisFunction.js";
 
 
 export const findWorkspace = async () => {
-    return await Workspace.find().populate('Lead').populate('members.memberId').populate('department.project.projectId')
+    try {
+        console.log('compiler at findWorkspace')
+        const data = await getOrSetFunction('workspaces', () => { return Workspace.find().populate('Lead').populate('members.memberId').populate('department.project.projectId') })
+        console.log({ data })
+        return data
+    } catch (error) {
+        console.log(error)
+        return error
+
+    }
 }
 
 export const updateWorkspace = async (id, data) => {

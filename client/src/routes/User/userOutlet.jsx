@@ -3,17 +3,11 @@ import { useCookies } from "react-cookie";
 import { useEffect } from "react";
 
 function UserOutlet() {
-  const [cookies, setCookies] = useCookies();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (!cookies.userJwt) {
-      return <Navigate to="/login" />;
-    }
-  }, []);
-  if (cookies.userJwt) {
-    console.log("userOutlet");
+  const data = localStorage.getItem("User");
+  if (data) {
     return <Outlet />;
   }
+  return <Navigate to="/" />;
 }
 
 export default UserOutlet;

@@ -1,7 +1,7 @@
 import Task from "../models/taskModal.js";
 import { groupTasks } from "../services/Task.js";
 import { updateProjectWithTaskData } from "../services/Project.js";
-import { uploadFile } from '../utils/s3.js'
+import { getFileStream, uploadFile } from '../utils/s3.js'
 
 
 
@@ -26,9 +26,12 @@ export const getAllTask = async (req, res) => {
 export const createTask = async (req, res) => {
   try {
     const { projectId, taskName, description, dueDate } = req.body;
-    const uploadResult = await uploadFile(req.file)
-    console.log({ uploadResult })
-    const link = uploadResult.Key;
+    let link
+    if (req.file) {
+      const uploadResult = await uploadFile(req.file)
+      console.log({ uploadResult })
+      link = uploadResult.Key;
+    }
     const newTask = new Task({
       taskName, description, dueDate, attachedfiles: [{ link }],
       createdBy: req.user._id, projectID: projectId,
@@ -51,6 +54,14 @@ export const createTask = async (req, res) => {
     });
   }
 };
+
+
+//get task file
+export const streamAttachedFile = async (req, res) => {
+  const key = req.params.key;
+  const readStream = getFileStream(key);
+  readStream.pipe(res)
+}
 
 // get allTask in an array
 export const allTasks = async (req, res) => {

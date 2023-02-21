@@ -19,14 +19,18 @@ export default function List() {
   const [openAddTask, setOpenAddTask] = useState(false);
   const [cookies, setCookie] = useCookies();
   const [reload, setReload] = useState(false);
+  const componentReload = () => {
+    console.log("reload");
+    window.location.reload(false);
+  };
   const productID =
     useSelector(fetchProductId) || localStorage.getItem("ProjectId");
-  useEffect(() => {}, [reload]);
 
   const {
     isLoading,
     error,
     data: tasks,
+    mutate,
   } = useSWR({ id: productID, cookies: cookies.userJwt }, fetchTask);
   if (isLoading) {
     console.log("loading...");
@@ -143,8 +147,11 @@ export default function List() {
           </div>
           {openAddTask && (
             <AddTask
-              setShowModal={() => setOpenAddTask(false)}
-              reloadData={() => setReload((data) => !data)}
+              setShowModal={() => {
+                mutate();
+                console.log("mutated");
+                setOpenAddTask(false);
+              }}
             />
           )}
         </>

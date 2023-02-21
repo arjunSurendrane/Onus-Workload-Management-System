@@ -8,14 +8,19 @@ import { useSelector } from "react-redux";
 import { fetchProductId } from "../../../features/users/Project";
 import { useNavigate } from "react-router-dom";
 
-export default function AddTask({ setShowModal, reloadData }) {
+export default function AddTask({ setShowModal }) {
   const [cookies, setCookies] = useCookies();
   const projectId = useSelector(fetchProductId);
   const navigate = useNavigate();
 
   const schema = yup.object().shape({
-    taskName: yup.string().required(),
-    dueDate: yup.date().required(),
+    taskName: yup.string().required("Must enter task name"),
+    createdAt: yup.date().default(() => new Date()),
+    dueDate: yup
+      .date()
+      .typeError("Enter the date")
+      .min(yup.ref("createdAt"), "Due date can't be before created")
+      .required("Must enter due date"),
     Description: yup.string().min(4).required(),
   });
   const {

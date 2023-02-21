@@ -46,7 +46,13 @@ export default function Task({ setShowModal, taskData }) {
                       <div className="flex">
                         <div
                           id=""
-                          className=" py-2 px-2 h-8 bg-gray-400 rounded-l"
+                          className={` py-2 px-2 h-8 ${
+                            taskData?.status == "ToDo"
+                              ? "bg-gray-400"
+                              : taskData?.status == "InProgress"
+                              ? "bg-pink-500"
+                              : "bg-green-500"
+                          } bg-gray-400 rounded-l`}
                         >
                           <p className="text-xs text-white">
                             {taskData?.status}
@@ -54,8 +60,17 @@ export default function Task({ setShowModal, taskData }) {
                         </div>
                         <div
                           id=""
-                          className="w-5 h-8  bg-gray-400 rounded-r mx-1 text-center text-white
-                          "
+                          className={`w-5 h-8  ${
+                            taskData?.status == "ToDo"
+                              ? "bg-gray-400"
+                              : taskData?.status == "InProgress"
+                              ? "bg-pink-500"
+                              : "bg-green-500"
+                          } rounded-r mx-1 text-center text-white cursor-default
+                          `}
+                          onClick={() => {
+                            console.log("clicked");
+                          }}
                         >
                           {">"}
                         </div>
@@ -117,7 +132,8 @@ export default function Task({ setShowModal, taskData }) {
                   </div>
                 </div>
               </div>
-              <div className="flex justify-between px-10 py-10 max-h-[600px] overflow-y-scroll overflow-x-clip">
+
+              <div className="flex justify-between px-10  max-h-[600px] overflow-y-scroll overflow-x-clip">
                 <div className="w-[50%] border-r-2 px-3">
                   <h1 className="text-2xl">{taskData?.taskName}</h1>
                   <div className="mt-5">

@@ -16,7 +16,7 @@ export default function LandingPage() {
   console.log("heey");
   useEffect(() => {
     if (cookies.userJwt) {
-      history("/workspace");
+      history("/home");
     }
   });
   return (
