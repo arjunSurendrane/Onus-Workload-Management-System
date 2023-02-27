@@ -15,10 +15,21 @@ const taskSchema = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
     ref: "Project",
   },
+  priority: { type: Boolean, default: false },
   createdDate: Date,
   status: {
     type: String,
     default: "ToDo",
+  },
+  update: {
+    updatedBy: {
+      type: mongoose.Types.ObjectId,
+      ref: 'User'
+    },
+    updateTime: {
+      type: Date,
+      default: Date.now()
+    }
   },
   dueDate: Date,
   subtasks: [

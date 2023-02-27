@@ -7,8 +7,8 @@ export default function UserLogin() {
   const [cookies, setCookie] = useCookies();
   const history = useNavigate();
   useEffect(() => {
-    if (cookies.userJwt) {
-      history("/home");
+    if (localStorage.getItem("User")) {
+      history("/workspace");
     }
   });
   return (

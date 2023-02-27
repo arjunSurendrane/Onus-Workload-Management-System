@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
@@ -7,10 +7,15 @@ import { useCookies } from "react-cookie";
 import { useSelector } from "react-redux";
 import { fetchProductId } from "../../../features/users/Project";
 import { useNavigate } from "react-router-dom";
+import { mutate } from "swr";
+import toast, { Toaster } from "react-hot-toast";
+import { Box } from "@mui/system";
+import { CircularProgress } from "@mui/material";
 
-export default function AddTask({ setShowModal }) {
+export default function AddTask() {
   const [cookies, setCookies] = useCookies();
   const projectId = useSelector(fetchProductId);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const schema = yup.object().shape({
@@ -29,18 +34,20 @@ export default function AddTask({ setShowModal }) {
     formState: { errors },
   } = useForm({ resolver: yupResolver(schema) });
   const onSubmit = async (data) => {
-    console.log(data);
+    setLoading(true);
     const res = await addTask({
       cookie: cookies.userJwt,
       data: { ...data, projectId },
     });
     console.log({ task: res });
     if (res.data.status == "success") {
-      setShowModal();
+      setLoading(false);
+      navigate("/department/list");
     }
   };
   return (
     <div>
+      <Toaster />
       <div className="flex justify-center items-center overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none bg-black bg-opacity-60 focus:outline-none">
         <div className="relative  my-6 mx-auto max-w-3xl min-w-[40%]">
           <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
@@ -48,7 +55,7 @@ export default function AddTask({ setShowModal }) {
               <h1 className="font-bold text-lg">Create Task</h1>
               <button
                 className="bg-transparent border-0 text-black float-right"
-                onClick={() => setShowModal()}
+                onClick={() => navigate("/department/list")}
               >
                 x
               </button>
@@ -144,7 +151,13 @@ export default function AddTask({ setShowModal }) {
                     type="submit"
                     className="group relative flex w-full justify-center rounded-md border border-transparent bg-[#7b68ee] py-2 px-4 text-sm font-medium text-white hover:bg-[#3b3171] focus:outline-none focus:ring-2 focus:ring-[#231e43] focus:ring-offset-2"
                   >
-                    Create Task
+                    {loading ? (
+                      <Box sx={{ display: "flex" }}>
+                        <CircularProgress color="inherit" size={20} />
+                      </Box>
+                    ) : (
+                      "Create Task"
+                    )}
                   </button>
                 </div>
               </form>

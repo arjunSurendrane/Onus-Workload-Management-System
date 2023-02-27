@@ -6,7 +6,6 @@ export const isUser = async (req, res, next) => {
     try {
         // GETTING TOKEN AND CHECK OF ITS THERE
         let token;
-        console.log(req.headers.authorization)
         if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
             token = req.headers.authorization.split(' ')[1];
         }
@@ -29,7 +28,6 @@ export const isUserValid = async (req, res, next) => {
     try {
         // GETTING TOKEN AND CHECK OF ITS THERE
         let token;
-        console.log(req.headers.authorization)
         if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
             token = req.headers.authorization.split(' ')[1];
         }

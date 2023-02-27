@@ -23,13 +23,15 @@ import ForgotPassword from "../../Pages/User/Login/forgotPasswordOtp";
 import LandingPage from "../../Pages/User/LandingPage/LandingPage";
 import UserOutlet from "./userOutlet";
 import ErrorPage from "../../Pages/User/PageNotFound/errorPage.jsx";
+import AddTask from "../../Component/User/Task/addTask";
+import WorkspaceSettingsPage from "../../Pages/User/Workspace/SettingsPage/settings";
 
 export default function UserRoutes() {
   return (
     <div>
       <Sidebar />
       <Routes>
-        <Route path="/">
+        <Route path="/" element={<UserOutlet />}>
           <Route path="home" element={<Home />} />
           <Route path="notification" element={<Notification />} />
           <Route path="online" element={<Online />} />
@@ -42,9 +44,14 @@ export default function UserRoutes() {
           <Route path="subscribe" element={<Subscribe />} />
           <Route path="createWorkspace" element={<CreateWorkspace />} />
           <Route path="createDepartment" element={<CreateDepartment />} />
+          <Route
+            path="workspace/settings"
+            element={<WorkspaceSettingsPage />}
+          />
           <Route path="createProject" element={<CreateTaskFromLogin />} />
           <Route path="addDepartment" element={<AddDepartmentPage />} />
           <Route path="addProject" element={<AddProjectPage />} />
+          <Route path="addTask" element={<AddTask />} />
         </Route>
       </Routes>
     </div>

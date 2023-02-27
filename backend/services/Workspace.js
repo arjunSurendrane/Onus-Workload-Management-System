@@ -31,3 +31,13 @@ export const addDepartmentIntoWorkspace = async (id, data) => {
     console.log({ res })
     return res
 }
+
+export const addMemberIntoWorkspace = async (id, memberId, role) => {
+    const res = await Workspace.findByIdAndUpdate(id, {
+        $push: {
+            members: { memberId, role }
+        }
+    }, { new: true, upsert: true })
+    return res
+
+}

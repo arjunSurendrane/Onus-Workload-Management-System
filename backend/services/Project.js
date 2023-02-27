@@ -1,5 +1,5 @@
 import Project from "../models/taskModal.js";
-import { getOrSetFunction, updateCacheMemory } from "../redis/redisFunction.js";
+import { deleteCache, getOrSetFunction, updateCacheMemory } from "../redis/redisFunction.js";
 
 export const AllProjects = async () => {
   const data = await getOrSetFunction('tasks', () => { return Project.find(); })
@@ -30,6 +30,7 @@ export const updateProjectWithTaskData = async (projectId, newTask) => {
     },
     { new: true }
   );
+  deleteCache(`groupedTask-${projectId}`)
   updateCacheMemory(`project-${projectId}`, data)
   return data
 };

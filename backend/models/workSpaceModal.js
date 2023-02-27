@@ -14,7 +14,9 @@ const workSpaceSchema = new mongoose.Schema({
       memberId: {
         type: mongoose.Types.ObjectId,
         ref: "User",
+        unique: true
       },
+      role: String
     },
   ],
   Lead: {

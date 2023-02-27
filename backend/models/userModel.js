@@ -25,16 +25,18 @@ const userSchema = new mongoose.Schema({
     memberOf: [{
         workspace: {
             type: mongoose.Types.ObjectId,
-            ref: 'User'
-        }
+            ref: 'Workspace',
+            unique: true
+        },
+        role: String
     }]
 }, { virtuals: true })
 
 
-userSchema.pre(/^find/, function (next) {
-    this.populate('memberOf.workspace')
-    next();
-})
+// userSchema.pre(/^find/, function (next) {
+//     this.populate("memberOf.workspace");
+//     next();
+// });
 
 const User = mongoose.model('User', userSchema)
 export default User

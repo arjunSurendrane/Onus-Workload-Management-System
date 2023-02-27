@@ -7,7 +7,7 @@ export default function UserSignup() {
   const [cookies, setCookie] = useCookies();
   const history = useNavigate();
   useEffect(() => {
-    if (cookies.userJwt) {
+    if (localStorage.getItem("User")) {
       history("/workspace");
     }
   });

@@ -15,7 +15,7 @@ export default function LandingPage() {
   console.log({ token: cookies });
   console.log("heey");
   useEffect(() => {
-    if (cookies.userJwt) {
+    if (localStorage.getItem("User")) {
       history("/home");
     }
   });

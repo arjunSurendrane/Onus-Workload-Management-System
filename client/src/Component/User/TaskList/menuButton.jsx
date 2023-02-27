@@ -18,7 +18,7 @@ export default function MenuButton() {
 
   return (
     <div className="fixed bottom-5 right-5">
-      {openModal && <AddTask setShowModal={() => setOpenModal(false)} />}
+      {/* {openModal && <AddTask setShowModal={() => setOpenModal(false)} />} */}
       <SpeedDial
         ariaLabel="SpeedDial basic example"
         // sx={{
@@ -34,7 +34,7 @@ export default function MenuButton() {
             key={action.name}
             icon={<AiOutlineAppstoreAdd size={20} />}
             tooltipTitle={action.name}
-            onClick={() => setOpenModal(true)}
+            onClick={() => history("/addTask")}
           />
         ))}
       </SpeedDial>

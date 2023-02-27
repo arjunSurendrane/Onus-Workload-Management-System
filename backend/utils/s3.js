@@ -38,7 +38,7 @@ export const getFileStream = (fileKey) => {
     const { bucketName, s3 } = credentials()
     const downloadParams = {
         Key: fileKey,
-        bucket: bucketName
+        Bucket: bucketName
     }
     return s3.getObject(downloadParams).createReadStream()
 }

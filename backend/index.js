@@ -32,7 +32,7 @@ mongoose
 // route setup
 app.use("/api/admin", adminRoute);
 app.use("/api/user", userRoute);
-app.use(isUser);
+// app.use(isUser);
 app.use("/api/workspace", workSpaceRoute);
 
 // connected to localhost

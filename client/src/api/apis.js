@@ -19,6 +19,7 @@ export const fetchTask = async ({ id, cookies }) => {
         const res = await axios.get(`/workspace/tasks/${id}`, {
             headers: { authorization: `Bearer ${cookies}` }
         })
+        console.log(res)
         localStorage.setItem('Tasks', JSON.stringify({ ...res.data.tasks }))
         return res.data.tasks
 
@@ -70,4 +71,40 @@ export const fetchData = (namess) => {
 }
 
 
+
+export const fetchTaskData = async ({ id, cookie }) => {
+    const res = await axios.get(`/workspace/task/${id}`, { headers: { authorization: `Bearer ${cookie}` } })
+    console.log(res)
+    if (res.data.status == 'success') {
+        console.log({ task: res.data.task })
+        return res.data.task
+
+    }
+}
+
+
+export const changeStatus = async (id, status, cookie) => {
+    const res = await axios.patch(`/workspace/changetaskstatus/${id}`, { status }, { headers: { authorization: `Bearer ${cookie}` } })
+    if (res.data.status == 'success') {
+        return res.data.status
+    }
+    console.log({ changeStatusError: res })
+
+}
+
+export const deleteTask = async (id, cookie) => {
+    const res = await axios.delete(`/workspace/deleteTask/${id}`, { headers: { authorization: `Bearer ${cookie}` } })
+    console.log({ responseInApi: res })
+    if (res.status == 204) {
+        return res
+    }
+}
+
+export const changeTaskPrioriy = async (id, priority, cookie) => {
+    const res = await axios.patch(`/workspace/changePriority/${id}`, { priority }, { headers: { authorization: `Bearer ${cookie}` } })
+    console.log({ priority: res })
+    if (res.data.status == 'success') {
+        return res
+    }
+}
 

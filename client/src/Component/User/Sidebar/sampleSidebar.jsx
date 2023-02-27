@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { HiOutlineHome, HiStatusOnline } from "react-icons/hi";
-import { AiOutlineNotification, AiFillSetting } from "react-icons/ai";
+import { AiOutlineNotification } from "react-icons/ai";
 import { FiLogOut } from "react-icons/fi";
 import { BiChat } from "react-icons/bi";
-import { IoSettingsOutline } from "react-icons/io5";
 import { MdWorkspacesOutline } from "react-icons/md";
 import { GrFormAdd } from "react-icons/gr";
 import { CgMoveTask } from "react-icons/cg";
@@ -14,7 +13,11 @@ import { useCookies } from "react-cookie";
 import CreateWorkspace from "../../workSpaceForm";
 import { useNavigate } from "react-router-dom";
 import { Menu } from "@mui/material";
-import { Option, Select } from "@material-tailwind/react";
+import {
+  Accordion,
+  AccordionHeader,
+  AccordionBody,
+} from "@material-tailwind/react";
 import AddDepartment from "../Workspace/Add/addDepartment";
 import { useDispatch } from "react-redux";
 import { createProjectId } from "../../../features/users/Project";
@@ -38,18 +41,19 @@ export default function TrialSidebar() {
   }
   const [cookies, setCookies, removeCookies] = useCookies();
   const [open, setOpen] = useState(0);
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem("User")));
+  const [user, setUser] = useState();
   const dispatch = useDispatch();
   const [showList, setShowList] = useState(false);
   const [showTask, setShowTask] = useState("-1");
   const [addDepartment, setAddDepartment] = useState(false);
   const [addProject, setAddProject] = useState(false);
   const [departmentID, setDepartmentID] = useState("");
-  const [workspace, setWorkspace] = useState(user.memberOf[0]);
+  const [workspace, setWorkspace] = useState(
+    JSON.parse(localStorage.getItem("Workspace"))
+  );
   useEffect(() => {
-    // setWorkspace(JSON.parse(localStorage.getItem("User.memberOf")));
-    console.log({ userData: user.memberOf });
-  }, [addProject, addDepartment, workspace]);
+    setWorkspace(JSON.parse(localStorage.getItem("Workspace")));
+  }, [addProject, addDepartment]);
 
   const history = useNavigate();
   const handleOpen = (value) => {
@@ -58,9 +62,6 @@ export default function TrialSidebar() {
   const handleChange = (id) => {
     dispatch(createProjectId(id));
     history("/department/list");
-  };
-  const handleChangeWorkspace = (key) => {
-    setWorkspace(user.memberOf[key]);
   };
   console.log({ workspace });
   return (
@@ -115,23 +116,8 @@ export default function TrialSidebar() {
               </li>
               <hr />
               <li className="cursor-pointer" onClick={() => setShowTask("-1")}>
-                <span className="flex justify-between text-sm ml-3 whitespace-nowrap text-gray-500 font-bold">
-                  <select
-                    name="workspace"
-                    id=""
-                    className="focus:outline-none"
-                    onChange={(e) => handleChangeWorkspace(e.target.value)}
-                  >
-                    {user.memberOf.map((data, key) => (
-                      <option value={key} className="py-5 px-5">
-                        {data?.workspace?.Name}
-                      </option>
-                    ))}
-                  </select>
-                  <IoSettingsOutline
-                    size={20}
-                    onClick={() => history("/workspace/settings")}
-                  />
+                <span className="flex-1 text-sm ml-3 whitespace-nowrap text-gray-500 font-bold">
+                  {workspace?.Name}
                 </span>
               </li>
               <li className="bg-gray-200 rounded-lg overflow-hidden mt-2">
@@ -147,7 +133,7 @@ export default function TrialSidebar() {
                 </a>
               </li>
 
-              {workspace?.workspace?.department.map((data, i) => (
+              {workspace?.department.map((data, i) => (
                 <li className=" rounded-lg overflow-hidden">
                   <a
                     href="#"

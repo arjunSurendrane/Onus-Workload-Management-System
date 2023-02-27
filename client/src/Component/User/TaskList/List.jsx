@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { AiOutlineUserAdd } from "react-icons/ai";
 import { CgFlagAlt } from "react-icons/cg";
+import { RiFlag2Fill } from "react-icons/ri";
 import { BiMessageDetail } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
 import addTaskImage from "../../../assets/undraw_add_files_re_v09g.svg";
@@ -10,17 +11,20 @@ import { useCookies } from "react-cookie";
 import { fetchProductId } from "../../../features/users/Project";
 import useSWR from "swr";
 import { useSelector } from "react-redux";
-import { fetchTask } from "../../../api/apis";
+import { changeTaskPrioriy, deleteTask, fetchTask } from "../../../api/apis";
+import { RiDeleteBin6Line } from "react-icons/ri";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function List() {
   const history = useNavigate();
   const [showModal, setShowModal] = useState(false);
-  const [task, setTask] = useState({});
+  const [task, setTask] = useState();
   const [openAddTask, setOpenAddTask] = useState(false);
   const [cookies, setCookie] = useCookies();
   const [reload, setReload] = useState(false);
+  const today = new Date(Date.now());
+  const navigate = useNavigate();
   const componentReload = () => {
-    console.log("reload");
     window.location.reload(false);
   };
   const productID =
@@ -29,7 +33,7 @@ export default function List() {
   const {
     isLoading,
     error,
-    data: tasks,
+    data: tasksData,
     mutate,
   } = useSWR({ id: productID, cookies: cookies.userJwt }, fetchTask);
   if (isLoading) {
@@ -37,8 +41,8 @@ export default function List() {
   } else if (error) {
     console.log("error");
   } else {
-    console.log("data");
-    console.log({ tasks });
+    console.log(tasksData);
+    const tasks = tasksData || [];
 
     let inProgress, ToDo, Completed;
 
@@ -47,12 +51,67 @@ export default function List() {
     Completed = tasks?.filter((data) => data._id == "Completed");
 
     const displayTasks = (data) => {
-      setTask(data);
+      setTask(data._id);
       setShowModal(true);
+    };
+    const taskAdded = () => {
+      console.log("mutated");
+      setOpenAddTask(false);
+    };
+    const handleDelete = async (id) => {
+      console.log("delete button clicked");
+      const res = await deleteTask(id, cookies.userJwt);
+      console.log({ res });
+      if (res) {
+        toast.success("Task deleted");
+        mutate([...tasksData]);
+        setShowModal(false);
+      }
+    };
+    const updatePriority = async (id, priority) => {
+      const task = await changeTaskPrioriy(id, priority, cookies.userJwt);
+      if (task.data.status == "success") {
+        toast.success("update priority");
+        mutate([...tasksData]);
+      }
+    };
+    const deleteConfirmationMessage = (data) => {
+      toast((t) => (
+        <span>
+          Are You Sure to delete <b>{data.taskName}</b>
+          <div className="flex justify-between mt-5">
+            <div>
+              <button
+                className="border-2 px-5 py-2 bg-gray-400 font-medium text-sm"
+                onClick={() => toast.dismiss(t.id)}
+              >
+                Cancel
+              </button>
+            </div>
+            <div>
+              <button
+                className="border-2 bg-red-500 text-white px-5 py-2 font-medium text-sm"
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  handleDelete(data._id);
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </span>
+      ));
     };
     const taskList = (data) => {
       return (
-        <div className="flex justify-between border shadow-sm py-2">
+        <div
+          className={`flex justify-between border shadow-sm py-2 ${
+            new Date(data.dueDate) < today
+              ? "bg-red-200 text-red-700 font-bold"
+              : ""
+          }`}
+        >
           <div
             className=" px-3 py-1 cursor-pointer"
             onClick={() => displayTasks(data)}
@@ -64,14 +123,32 @@ export default function List() {
             <p className=" uppercase text-gray-700 font-bold ">
               <AiOutlineUserAdd size={20} />
             </p>
-            <p className=" uppercase md:text-[10px] text-gray-700 text-[8px] font-bold ">
+            <p
+              className={`${
+                new Date(data.dueDate) > today
+                  ? "text-gray-700"
+                  : new Date(data.dueDate) == today
+                  ? "text-yellow-500"
+                  : "text-red-400"
+              } uppercase md:text-[10px] text-[8px] font-bold `}
+            >
               {data?.dueDate.split("T")[0]}
             </p>
-            <p className=" uppercase text-gray-700 font-bold ">
-              <CgFlagAlt size={20} />
+            <p
+              className=" uppercase text-gray-700 font-bold "
+              onClick={() => updatePriority(data._id, !data.priority)}
+            >
+              {data.priority ? (
+                <RiFlag2Fill size={20} />
+              ) : (
+                <CgFlagAlt size={20} />
+              )}
             </p>
-            <p className=" uppercase text-gray-700 font-bold ">
-              <BiMessageDetail size={20} />
+            <p
+              className=" uppercase text-gray-700 font-bold cursor-pointer"
+              onClick={() => deleteConfirmationMessage(data)}
+            >
+              <RiDeleteBin6Line size={20} />
             </p>
           </div>
         </div>
@@ -95,67 +172,62 @@ export default function List() {
             priority
           </p>
           <p className=" uppercase md:text-[10px] text-[7px] font-bold text-gray-400 ">
-            comments
+            delete
           </p>
         </div>
       </div>
     );
 
-    console.log(ToDo, Completed, inProgress);
-    console.log({
-      todo: ToDo.data,
-      Completed: Completed.data,
-      inProgress: inProgress.data,
-    });
-    if (tasks.length) {
-      return (
-        <>
-          <div>
-            <div className="fmd:mx-14 mx-5 mt-10  md:w-[70vw] w-[87vw] px-2 ">
-              {/* TODO */}
-              {ToDo.length ? TaskHeading("TODO", "gray-200", "gray-500") : ""}
-              {ToDo[0]?.data?.map((data) => taskList(data))}
+    return (
+      <>
+        {" "}
+        <Toaster />
+        {tasks.length ? (
+          <>
+            <div>
+              <div className="fmd:mx-14 mx-5 mt-10  md:w-[70vw] w-[87vw] px-2 ">
+                {/* TODO */}
+                {ToDo.length ? TaskHeading("TODO", "gray-200", "gray-500") : ""}
+                {ToDo[0]?.data?.map((data) => taskList(data))}
 
-              {/* IN PROGRESS */}
-              {inProgress.length
-                ? TaskHeading("TODO", "[#a875ff]", "white")
-                : ""}
-              {inProgress[0]?.data?.map((data) => taskList(data))}
+                {/* IN PROGRESS */}
+                {inProgress.length
+                  ? TaskHeading("IN PROGRESS", "[#a875ff]", "white")
+                  : ""}
+                {inProgress[0]?.data?.map((data) => taskList(data))}
 
-              {/* COMPLETED  */}
-              {Completed.length
-                ? TaskHeading("COMPLETED", "[#6bc950]", "white")
-                : ""}
-              {Completed[0]?.data?.map((data) => taskList(data))}
+                {/* COMPLETED  */}
+                {Completed.length
+                  ? TaskHeading("COMPLETED", "[#6bc950]", "white")
+                  : ""}
+                {Completed[0]?.data?.map((data) => taskList(data))}
+              </div>
             </div>
-          </div>
-          {showModal && (
-            <Task setShowModal={() => setShowModal(false)} taskData={task} />
-          )}
-        </>
-      );
-    } else {
-      return (
-        <>
-          <div className=" md:w-[70vw] w-[87vw] h-[80vh] grid place-items-center  text-center">
-            <img
-              src={addTaskImage}
-              alt="add task"
-              className="w-[200px] h-[200px] transition ease-in-out  hover:-translate-y-1 hover:scale-110 duration-200 mb-0 pb-0 cursor-pointer"
-              onClick={() => setOpenAddTask(true)}
-            />
-          </div>
-          {openAddTask && (
-            <AddTask
-              setShowModal={() => {
-                mutate();
-                console.log("mutated");
-                setOpenAddTask(false);
-              }}
-            />
-          )}
-        </>
-      );
-    }
+            {showModal && (
+              <Task
+                setShowModal={() => {
+                  setShowModal(false);
+                  mutate([...tasksData]);
+                }}
+                deleteTask={(data) => deleteConfirmationMessage(data)}
+                taskId={task}
+                updatePriority={(id, priority) => updatePriority(id, priority)}
+              />
+            )}
+          </>
+        ) : (
+          <>
+            <div className=" md:w-[70vw] w-[87vw] h-[80vh] grid place-items-center  text-center">
+              <img
+                src={addTaskImage}
+                alt="add task"
+                className="w-[200px] h-[200px] transition ease-in-out  hover:-translate-y-1 hover:scale-110 duration-200 mb-0 pb-0 cursor-pointer"
+                onClick={() => navigate("/addTask")}
+              />
+            </div>
+          </>
+        )}
+      </>
+    );
   }
 }

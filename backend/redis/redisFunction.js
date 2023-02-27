@@ -7,11 +7,11 @@ export async function getOrSetFunction(key, cb) {
     const redisClient = await connectToRedis()
     const res = await redisClient.get(key)
     if (res != null) {
-        console.log({ res })
+        console.log({ reddisData: res })
         return JSON.parse(res)
     };
     const fetchData = await cb();
-    redisClient.setEx(key, 3600, JSON.stringify(fetchData))
+    redisClient.setEx(key, process.env.REDIS_EXPIRE, JSON.stringify(fetchData))
     console.log({ fetchData })
     return fetchData;
 }
@@ -20,7 +20,14 @@ export async function getOrSetFunction(key, cb) {
 // update data
 export async function updateCacheMemory(key, data) {
     const redisClient = await connectToRedis()
-    const res = await redisClient.setEx(key, 3600, JSON.stringify(data))
+    const res = await redisClient.setEx(key, process.env.REDIS_EXPIRE, JSON.stringify(data))
     return res
+}
+
+
+export async function deleteCache(key) {
+    const redisClient = await connectToRedis()
+    const del = await redisClient.del(key)
+    return del
 }
 

@@ -1,5 +1,5 @@
 import Task from "../models/taskModal.js";
-import { groupTasks } from "../services/Task.js";
+import { changeStatus, changeTaskPriority, deleteTaskUsingId, getTask, groupTasks } from "../services/Task.js";
 import { updateProjectWithTaskData } from "../services/Project.js";
 import { getFileStream, uploadFile } from '../utils/s3.js'
 
@@ -15,6 +15,7 @@ export const getAllTask = async (req, res) => {
       tasks,
     });
   } catch (error) {
+    console.log(error)
     res.status(404).json({
       status: "error",
       error: `${error}`,
@@ -70,3 +71,34 @@ export const allTasks = async (req, res) => {
     tasks,
   });
 };
+
+export const getOneTask = async (req, res) => {
+  const id = req.params.id
+  const task = await getTask(id)
+  res.status(200).json({
+    status: 'success',
+    task
+  })
+}
+
+export const changeTaskStatus = async (req, res) => {
+  const { status } = req.body;
+  const id = req.params.id
+  const task = changeStatus(id, status)
+  res.json({ status: 'success', task })
+}
+
+export const changePriority = async (req, res) => {
+  const { priority } = req.body;
+  const id = req.params.id
+  const task = changeTaskPriority(id, priority)
+  res.json({ status: 'success', task })
+}
+
+
+
+export const deleteTask = async (req, res) => {
+  const id = req.params.id
+  const task = deleteTaskUsingId(id)
+  res.status(204).json({ status: 'success' })
+}

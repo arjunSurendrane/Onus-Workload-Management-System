@@ -14,8 +14,6 @@ export default function LandingNav() {
       <div className=" hidden md:flex">
         <ul className="flex">
           <li className="p-4 font-bold">Home</li>
-          <li className="p-4 font-bold">About</li>
-          <li className="p-4 font-bold">Contact</li>
         </ul>
       </div>
 

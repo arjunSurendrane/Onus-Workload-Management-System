@@ -1,6 +1,8 @@
 import Project from "../models/projectModal.js";
+import User from "../models/userModel.js";
 import Workspace from "../models/workSpaceModal.js";
-import { addDepartmentIntoWorkspace, findWorkspace, updateWorkspace } from "../services/Workspace.js";
+import { addWorkspaceInUser } from "../services/User.js";
+import { addDepartmentIntoWorkspace, addMemberIntoWorkspace, findWorkspace, updateWorkspace } from "../services/Workspace.js";
 
 // create token and send response
 const successresponse = async (res, statusCode, data) => {
@@ -35,9 +37,9 @@ export const createWorkspace = async (req, res) => {
                 project: [{ projectId: project._id }]
             }
         })
-        await Promise.all([project.save(), workspace.save()])
-        console.log({ workspace, project })
-        successresponse(res, 200, workspace);
+        const [projectDB, workspaceDB, user] = await Promise.all([project.save(), workspace.save(), User.findByIdAndUpdate(workspace.Lead, { $push: { memberOf: { workspace: workspace._id }, role: 'owner' } })])
+        console.log({ workspace, project, })
+        successresponse(res, 200, user.memberOf);
     } catch (error) {
         console.log(error)
         errorResponse(res, 404, error)
@@ -75,15 +77,14 @@ export const addDepartment = async (req, res) => {
 export const addMembers = async (req, res) => {
     try {
         console.log(req.body)
-        const { members } = req.body
-        const newWorkSpace = await Workspace.findOneAndUpdate({ _id: req.params.id }, {
-            $push: {
-                members: { memberId: members }
-            }
-        }, { new: true, upsert: true })
+        const { memberId, role } = req.body
+        const workdpaceId = req.params.id
+        const [user, newWorkSpace] = await Promise.all([addWorkspaceInUser(memberId, workdpaceId, role), addMemberIntoWorkspace(workdpaceId, memberId)])
         console.log(newWorkSpace)
-        successresponse(res, 200, newWorkSpace)
+        successresponse(res, 200, user)
     } catch (error) {
         errorResponse(res, 404, `error : ${error}`)
     }
 }
+
+
