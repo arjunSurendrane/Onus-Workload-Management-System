@@ -5,6 +5,7 @@ export async function getOrSetFunction(key, cb) {
   const redisClient = await connectToRedis();
   const res = await redisClient.get(key);
   if (res != null) {
+    console.log("from redis");
     return JSON.parse(res);
   }
   const fetchData = await cb();

@@ -5,6 +5,8 @@ import {
   getOrSetFunction,
   updateCacheMemory,
 } from "../redis/redisFunction.js";
+import asyncHandler from "express-async-handler";
+import catchError from "../utils/serviceErrorHandler.js";
 
 /**
  * Group all task usign its status
@@ -40,7 +42,6 @@ export const groupTasks = async (projectID) => {
       },
     ]);
   });
-  console.log({ groupTask: data });
   return data;
 };
 
@@ -62,20 +63,22 @@ export const getTask = async (id) => {
  * @param {Object} data - Updated data in object format
  * @returns {Object} - Task data get from mongodb
  */
-export const updateTask = async (id, data, userid) => {
+export const updateTask = catchError(async (params) => {
+  const [id, data, userid] = params;
   const update = {
     updatedBy: userid,
     updateTime: new Date(Date.now()),
   };
-  const task = await Task.findByIdAndUpdate(
-    id,
-    { ...data, update },
-    { new: true, lean: true }
-  );
-  deleteCache(`groupedTask-${task.projectID}`);
+  console.log({ ...data, update, id });
+  const task = await Task.findByIdAndUpdate(id, data, {
+    new: true,
+    lean: true,
+  });
+  console.log({ task });
+  deleteCache(`groupedTask-${task.projectID._id}`);
   updateCacheMemory(`task-${id}`, task);
   return task;
-};
+});
 
 /**
  * Delete Task
@@ -86,6 +89,6 @@ export const deleteTaskUsingId = async (id) => {
   const data = await Task.findByIdAndDelete(id);
   deleteCache(`task-${id}`);
   console.log({ data });
-  deleteCache(`groupedTask-${data.projectID}`);
+  deleteCache(`groupedTask-${data.projectID._id}`);
   return data;
 };
