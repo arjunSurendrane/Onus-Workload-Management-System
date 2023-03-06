@@ -24,7 +24,9 @@ import { isUser } from "../middleware/userAuth.js";
 const upload = multer({ dest: "./assets/files" });
 const router = express.Router();
 
-// router.use(isUser)
+/**
+ * Route /workspace/*
+ */
 router.get("/task/attachedFile/:key", streamAttachedFile);
 router.patch("/member/:id", addMembers);
 router.get("/task", allTasks);

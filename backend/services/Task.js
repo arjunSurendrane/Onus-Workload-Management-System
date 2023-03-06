@@ -51,7 +51,7 @@ export const groupTasks = async (projectID) => {
  */
 export const getTask = async (id) => {
   const data = await getOrSetFunction(`task-${id}`, () => {
-    return Task.findById(id);
+    return Task.findById(id).lean();
   });
   return data;
 };
@@ -70,11 +70,11 @@ export const updateTask = async (id, data, userid) => {
   const task = await Task.findByIdAndUpdate(
     id,
     { ...data, update },
-    { new: true }
+    { new: true, lean: true }
   );
   deleteCache(`groupedTask-${task.projectID}`);
   updateCacheMemory(`task-${id}`, task);
-  return data;
+  return task;
 };
 
 /**

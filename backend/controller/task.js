@@ -17,7 +17,7 @@ import { response } from "./response.js";
  * @param {Object} req - req.params.id = project ID
  * @param {Object} res - send task data to client
  */
-export const groupAllTaks = catchAsync(async (req, res) => {
+export const groupAllTaks = catchAsync(async (req, res, next) => {
   const projectID = req.params.id;
   const tasks = await groupTasks(projectID);
   res.status(200).json({
@@ -33,7 +33,7 @@ export const groupAllTaks = catchAsync(async (req, res) => {
  * @param {Object} req
  * @param {Object} res
  */
-export const createTask = catchAsync(async (req, res) => {
+export const createTask = catchAsync(async (req, res, next) => {
   const { projectId, taskName, description, dueDate } = req.body;
   let link;
   if (req.file) {
@@ -65,7 +65,7 @@ export const createTask = catchAsync(async (req, res) => {
  * GET /task/attachedFile/:key
  * @description It is used to send attached files from s3 to client
  */
-export const streamAttachedFile = catchAsync(async (req, res) => {
+export const streamAttachedFile = catchAsync(async (req, res, next) => {
   const key = req.params.key;
   const readStream = getFileStream(key);
   readStream.pipe(res);
@@ -76,7 +76,7 @@ export const streamAttachedFile = catchAsync(async (req, res) => {
  * GET /task
  * @description - It is used to retrieve all task form task collection
  */
-export const allTasks = catchAsync(async (req, res) => {
+export const allTasks = catchAsync(async (req, res, next) => {
   const tasks = await Task.find();
   res.status(200).json({
     tasks,
@@ -89,7 +89,7 @@ export const allTasks = catchAsync(async (req, res) => {
  * @description - It is used to get one task data
  * @param {Object} req - the req params contain the task id
  */
-export const getOneTask = catchAsync(async (req, res) => {
+export const getOneTask = catchAsync(async (req, res, next) => {
   const id = req.params.id;
   const task = await getTask(id);
   res.status(200).json({
@@ -105,7 +105,7 @@ export const getOneTask = catchAsync(async (req, res) => {
  * @param {Object} req - req.body contain the status and params contain the task id
  * @param {object} res - send task and success message to client
  */
-export const changeTaskStatus = catchAsync(async (req, res) => {
+export const changeTaskStatus = catchAsync(async (req, res, next) => {
   const { status } = req.body;
   const id = req.params.id;
   const task = updateTask(id, { status }, req.user._id);
@@ -119,7 +119,7 @@ export const changeTaskStatus = catchAsync(async (req, res) => {
  * @param {Object} req - req.body => priority(string) req.params.id => taskId
  * @param {object} res - send task and success message to client
  */
-export const changePriority = catchAsync(async (req, res) => {
+export const changePriority = catchAsync(async (req, res, next) => {
   const { priority } = req.body;
   const id = req.params.id;
   const task = updateTask(id, { priority }, req.user._id);
@@ -132,7 +132,7 @@ export const changePriority = catchAsync(async (req, res) => {
  * @description - Delete task used to its id
  * @param {Object} req - req.params.id => taskId
  */
-export const deleteTask = catchAsync(async (req, res) => {
+export const deleteTask = catchAsync(async (req, res, next) => {
   const id = req.params.id;
   const task = deleteTaskUsingId(id);
   res.status(204).json({ status: "success" });
@@ -145,7 +145,7 @@ export const deleteTask = catchAsync(async (req, res) => {
  * @param {Object} req - req.body => userID,taskId
  * @param {object} res - send task and success message to client
  */
-export const assignTask = catchAsync(async (req, res) => {
+export const assignTask = catchAsync(async (req, res, next) => {
   const { taskId, userId } = req.body;
   const task = await updateTask(taskId, { Assigned: userId }, req.user._id);
   res.status(200).json({ staus: "success", task });
@@ -157,9 +157,11 @@ export const assignTask = catchAsync(async (req, res) => {
  * @param {Object} req - req.body have task details and params have task id
  * @param {Object} res - send success messagea and task data
  */
-export const TaskUpdate = catchAsync(async (req, res) => {
+export const TaskUpdate = catchAsync(async (req, res, next) => {
   const id = req.params.id;
-  const { taskName, description, dueDate } = req.body;
-  const data = updateTask(id, { taskName, description, dueDate }, req.user._id);
+  console.log(id);
+  const { taskName, description } = req.body;
+  const data = await updateTask(id, { taskName, description }, req.user._id);
+  console.log(data);
   response(res, 200, { task: data });
 });
