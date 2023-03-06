@@ -1,57 +1,74 @@
 import mongoose from "mongoose";
 
-const taskSchema = new mongoose.Schema({
-  taskName: String,
-  description: String,
-  Assigned: {
-    type: mongoose.Types.ObjectId,
-    ref: "User",
-  },
-  createdBy: {
-    type: mongoose.Types.ObjectId,
-    ref: "User",
-  },
-  projectID: {
-    type: mongoose.Types.ObjectId,
-    ref: "Project",
-  },
-  priority: { type: Boolean, default: false },
-  createdDate: Date,
-  status: {
-    type: String,
-    default: "ToDo",
-  },
-  update: {
-    updatedBy: {
+const taskSchema = new mongoose.Schema(
+  {
+    taskName: String,
+    description: String,
+    Assigned: {
       type: mongoose.Types.ObjectId,
-      ref: 'User'
+      ref: "User",
     },
-    updateTime: {
-      type: Date,
-      default: Date.now()
-    }
-  },
-  dueDate: Date,
-  subtasks: [
-    {
-      name: String,
-      Assigned: {
+    createdBy: {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
+    },
+    projectID: {
+      type: mongoose.Types.ObjectId,
+      ref: "Project",
+    },
+    priority: { type: Boolean, default: false },
+    createdDate: Date,
+    status: {
+      type: String,
+      default: "ToDo",
+    },
+    update: {
+      updatedBy: {
         type: mongoose.Types.ObjectId,
         ref: "User",
       },
+      updateTime: {
+        type: Date,
+        default: Date.now(),
+      },
     },
-  ],
-  attachedfiles: [{ link: String }],
+    dueDate: Date,
+    subtasks: [
+      {
+        name: String,
+        Assigned: {
+          type: mongoose.Types.ObjectId,
+          ref: "User",
+        },
+      },
+    ],
+    attachedfiles: [{ link: String }],
+  },
+  {
+    timestamps: true,
+    versionKey: false,
+    selectPopulatedPaths: false,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
+
+taskSchema.pre(/^save/, function (next) {
+  this.populate(["Assigned"]);
+  next();
 });
 
 taskSchema.virtual("project", {
-  ref: "projects",
-  localField: "task.taskName",
-  foreignField: "_id",
+  ref: "Project",
+  localField: "_id",
+  foreignField: "task.taskName",
+  justOne: true,
 });
 
-taskSchema.set("toObject", { virtuals: true });
-taskSchema.set("toJSON", { virtuals: true });
+taskSchema.pre(/^find/, function (next) {
+  this.populate(["Assigned", "project", "projectID"]);
+  next();
+});
 
 const Task = mongoose.model("Task", taskSchema);
 export default Task;

@@ -36,10 +36,10 @@ export const isUserValid = async (req, res, next) => {
         const decode = jwt.verify(token, process.env.JWT_SECRET);
         if (!decode.id) return res.status(401).json({ status: 'fail', message: false })
         // CHECK IF USER EXIST
-        const user = await User.findOne({ _id: decode.id });
+        const user = await User.findOne({ _id: decode.id }).populate("memberOf.workspace");
         if (!user) return res.status(401).json({ status: 'fail', message: false })
         req.user = user
-        res.status(200).json({ status: 'success', message: true })
+        res.status(200).json({ status: 'success', message: true, user })
     } catch (err) {
         res.status(401).json({ status: 'fail', message: false })
     }

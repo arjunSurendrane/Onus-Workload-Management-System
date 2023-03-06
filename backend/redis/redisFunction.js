@@ -31,3 +31,9 @@ export async function deleteCache(key) {
     return del
 }
 
+export async function getCacheData(key) {
+    const redisClient = await connectToRedis()
+    const data = await redisClient.get(key)
+    return JSON.parse(data)
+}
+

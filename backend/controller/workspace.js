@@ -1,90 +1,124 @@
 import Project from "../models/projectModal.js";
-import User from "../models/userModel.js";
 import Workspace from "../models/workSpaceModal.js";
-import { addWorkspaceInUser } from "../services/User.js";
-import { addDepartmentIntoWorkspace, addMemberIntoWorkspace, findWorkspace, updateWorkspace } from "../services/Workspace.js";
+import { getCacheData, updateCacheMemory } from "../redis/redisFunction.js";
+import { GenerateIvitationMail } from "../services/Nodemailer.js";
+import {
+  addWorkspaceInUser,
+  addWorkspaceInUsercollection,
+  findUserWithoutPassword,
+} from "../services/User.js";
+import {
+  addDepartmentIntoWorkspace,
+  addMemberIntoWorkspace,
+  findWorkspace,
+} from "../services/Workspace.js";
+import catchAsync from "../utils/catchAsync.js";
 
-// create token and send response
+/**
+ * Success response
+ * @param {Object} res
+ * @param {Number} statusCode - status code
+ * @param {data} data
+ */
 const successresponse = async (res, statusCode, data) => {
-    res.status(statusCode).json({
-        status: 'success',
-        data
-    })
-}
+  res.status(statusCode).json({
+    status: "success",
+    data,
+  });
+};
 
-// send error response
-const errorResponse = async (res, statusCode, error) => {
-    res.status(statusCode).json({
-        status: 'fail',
-        error
-    })
-}
+/**
+ * Create Workspace
+ * POST '/'
+ * @param {*} req - req.body contain name,department name, projectname
+ * @param {*} res - send success message with workspace data
+ */
+export const createWorkspace = catchAsync(async (req, res, next) => {
+  console.log(req.body);
+  const { name, departmentName, projectName } = req.body;
+  const project = new Project({
+    projectName,
+  });
+  const workspace = new Workspace({
+    Name: name,
+    Lead: req.user._id,
+    department: {
+      departmentName,
+      project: [{ projectId: project._id }],
+    },
+  });
+  const [projectDB, workspaceDB, user] = await Promise.all([
+    project.save(),
+    workspace.save(),
+    addWorkspaceInUsercollection(workspace),
+  ]);
+  successresponse(res, 200, user.memberOf);
+});
 
-// Create WorkSpace 
+/**
+ * Get All Workspace
+ * GET /
+ * @param {*} req
+ * @param {*} res
+ */
+export const getWorkspace = catchAsync(async (req, res, next) => {
+  const workspace = await findWorkspace();
+  successresponse(res, 200, workspace);
+});
 
-export const createWorkspace = async (req, res) => {
-    try {
-        console.log(req.body)
-        const { name, departmentName, projectName } = req.body
-        const project = new Project({
-            projectName
-        })
-        const workspace = new Workspace({
-            Name: name,
-            Lead: req.user._id,
-            department: {
-                departmentName,
-                project: [{ projectId: project._id }]
-            }
-        })
-        const [projectDB, workspaceDB, user] = await Promise.all([project.save(), workspace.save(), User.findByIdAndUpdate(workspace.Lead, { $push: { memberOf: { workspace: workspace._id }, role: 'owner' } })])
-        console.log({ workspace, project, })
-        successresponse(res, 200, user.memberOf);
-    } catch (error) {
-        console.log(error)
-        errorResponse(res, 404, error)
+/**
+ * Add Department
+ * PATCH /department/:id
+ * @description - add department into workspace object
+ * @param {*} req - req.body department name params have workspace id
+ * @param {*} res
+ */
+export const addDepartment = catchAsync(async (req, res, next) => {
+  console.log(req.body);
+  const departmentName = req.body.name;
+  const id = req.params.id;
+  console.log(departmentName, id);
+  const workspace = await addDepartmentIntoWorkspace(id, departmentName);
+  res.status(200).json({ status: "success", workspace });
+});
 
-    }
-}
+/**
+ * Add New Member
+ * PATCH /member/:id
+ * @description - Add a new member into workspace
+ * @param {*} req - req.params.id = member id
+ * @param {*} res - send success response with user data
+ */
+export const addMembers = catchAsync(async (req, res, next) => {
+  const memberId = req.params.id;
+  const { workspaceId, role } = await getCacheData(`invitation-${memberId}`);
+  console.log({ workspaceId, role });
+  const [user, newWorkSpace] = await Promise.all([
+    addWorkspaceInUser(memberId, workspaceId, role),
+    addMemberIntoWorkspace(workspaceId, memberId, role),
+  ]);
+  console.log(newWorkSpace);
+  successresponse(res, 200, user);
+});
 
-// Get WorkSpaceData
-export const getWorkspace = async (req, res) => {
-    try {
-        const workspace = await findWorkspace();
-        successresponse(res, 200, workspace)
-    } catch (error) {
-        errorResponse(res, 404, error)
-    }
-}
-
-
-// Add Department into Workspace
-export const addDepartment = async (req, res) => {
-    try {
-        console.log(req.body)
-        const departmentName = req.body.name;
-        const id = req.params.id
-        console.log(departmentName, id)
-        const workspace = await addDepartmentIntoWorkspace(id, departmentName)
-        res.status(200).json({ status: 'success', workspace })
-    } catch (error) {
-        res.status(404).json({ status: 'error', error: `${error}` })
-    }
-}
-
-
-// Add members into Workspace
-export const addMembers = async (req, res) => {
-    try {
-        console.log(req.body)
-        const { memberId, role } = req.body
-        const workdpaceId = req.params.id
-        const [user, newWorkSpace] = await Promise.all([addWorkspaceInUser(memberId, workdpaceId, role), addMemberIntoWorkspace(workdpaceId, memberId)])
-        console.log(newWorkSpace)
-        successresponse(res, 200, user)
-    } catch (error) {
-        errorResponse(res, 404, `error : ${error}`)
-    }
-}
-
-
+/**
+ * Send Invitation
+ * POST /invitation/:id
+ * @description send invitation for users
+ * @param {*} req - req.params.id = workspace id
+ * @param {*} res
+ */
+export const sendInvitation = catchAsync(async (req, res, next) => {
+  const workspaceId = req.params.id;
+  const { memberEmail, role } = req.body;
+  const user = await findUserWithoutPassword(memberEmail);
+  if (!user) return errorResponse(res, 410, `user not exist`);
+  updateCacheMemory(`invitation-${user._id}`, {
+    workspaceId,
+    memberId: user._id,
+    role,
+  });
+  GenerateIvitationMail(memberEmail, user.name, user._id);
+  console.log(user._id);
+  successresponse(res, 200, { email: user.email });
+});

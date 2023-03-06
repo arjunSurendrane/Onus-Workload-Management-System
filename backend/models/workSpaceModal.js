@@ -38,8 +38,9 @@ const workSpaceSchema = new mongoose.Schema({
   ],
 });
 
+
 workSpaceSchema.pre(/^find/, function (next) {
-  this.populate(["department.project.projectId", "Lead"]);
+  this.populate(["department.project.projectId", "Lead", "members.memberId"]);
   next();
 });
 

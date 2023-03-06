@@ -1,64 +1,55 @@
-import mongoose from "mongoose";
 import Project from "../models/projectModal.js";
-import Workspace from "../models/workSpaceModal.js";
+import { groupAllTask } from "../services/Project.js";
+import { updateProjectInWorkspace } from "../services/Workspace.js";
+import catchAsync from "../utils/catchAsync.js";
 
-export const createProject = async (req, res) => {
-  console.log(req.body);
-  try {
-    const { projectName, workspaceId, departmentID } = req.body;
-    const id = req.params.id;
-    const project = new Project({
-      projectName,
-    });
-    const [workspace, projectSave] = await Promise.all([
-      Workspace.findOneAndUpdate(
-        { _id: workspaceId, "department._id": departmentID },
-        { $push: { "department.$.project": { projectId: project._id } } },
-        { new: true }
-      ),
-      project.save(),
-    ]);
-    console.log({ workspace });
-    res.status(200).json({
-      status: "success",
-      project,
-      workspace,
-    });
-  } catch (error) {
-    res.status(404).json({
-      status: "fail",
-      error,
-    });
-  }
-};
-
-export const projects = async (req, res) => {
-  const projectID = req.params.id;
-  console.log(projectID);
-  const projects = await Project.aggregate([
-    [
-      {
-        $match: {
-          _id: mongoose.Types.ObjectId("63ee28395da037558c752630"),
-        },
-      },
-      {
-        $lookup: {
-          from: "tasks",
-          localField: "task.taskName",
-          foreignField: "_id",
-          as: "taskData",
-        },
-      },
-      {
-        $group: {
-          _id: "$taskData.status",
-          data: { $push: "$$ROOT" },
-        },
-      },
-    ],
-  ]);
-  res.json({
-    projects,
+/**
+ * Success response
+ * @param {Object} res
+ * @param {Number} statusCode - status code
+ * @param {data} data
+ */
+const successresponse = async (res, statusCode, data) => {
+  res.status(statusCode).json({
+    status: "success",
+    data,
   });
 };
+
+/**
+ * Create Project
+ * POST /project
+ * @param {*} req - req.body contain proejct name, workspace id, department id
+ * @param {*} res - success message with project data
+ */
+export const createProject = catchAsync(async (req, res) => {
+  console.log(req.body);
+  const { projectName, workspaceId, departmentID } = req.body;
+  const id = req.params.id;
+  const project = new Project({
+    projectName,
+  });
+  const [workspace, projectSave] = await Promise.all([
+    updateProjectInWorkspace(workspaceId, departmentID, project._id),
+    project.save(),
+  ]);
+  console.log({ workspace });
+  res.status(200).json({
+    status: "success",
+    project,
+    workspace,
+  });
+});
+
+/**
+ * Project Data
+ * GET /projects/:id
+ * @param {*} req
+ * @param {*} res
+ */
+export const projects = catchAsync(async (req, res) => {
+  const projectID = req.params.id;
+  console.log(projectID);
+  const projects = await groupAllTask(projectID);
+  successresponse(res, 200, projects);
+});
