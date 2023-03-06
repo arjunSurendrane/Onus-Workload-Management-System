@@ -32,19 +32,25 @@ export default function List() {
   };
   const productID =
     useSelector(fetchProductId) || localStorage.getItem("ProjectId");
-
+  /**
+   * SWR code for get grouped collecton data
+   */
   const {
     isLoading,
     error,
     data: tasksData,
     mutate,
   } = useSWR({ id: productID, cookies: cookies.userJwt }, fetchTask);
+
+  /**
+   * Check isloading/error/data
+   */
   if (isLoading) {
     console.log("loading...");
   } else if (error) {
     console.log("error");
   } else {
-    console.log(tasksData);
+    console.log({ fetchData: tasksData });
     const tasks = tasksData || [];
 
     let inProgress, ToDo, Completed;
@@ -74,8 +80,8 @@ export default function List() {
     const updatePriority = async (id, priority) => {
       const task = await changeTaskPrioriy(id, priority, cookies.userJwt);
       if (task.data.status == "success") {
+        mutate(tasksData.data);
         toast.success("update priority");
-        mutate([...tasksData]);
       }
     };
     const deleteConfirmationMessage = (data) => {
