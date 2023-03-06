@@ -19,6 +19,7 @@ export const addDepartment = async (id, cookie, data) => {
 };
 
 export const fetchTask = async ({ id, cookies }) => {
+  console.log("fetch task called");
   try {
     const res = await axios.get(`/workspace/tasks/${id}/list`, {
       headers: { authorization: `Bearer ${cookies}` },
