@@ -114,43 +114,51 @@ export default function WorkspaceSettings() {
       desc: (
         <>
           <div className=" mt-10">
-            <table className="table-fixed w-full border-separate border-spacing-1 border border-slate-100  border-t-[#7b68ee] border-t-4  rounded shadow-lg">
-              <thead>
-                <tr>
-                  <th>No</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Delete</th>
-                  <th>Edit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {members.map((data, i) => (
-                  <tr className="text-center items-center " key={i}>
-                    <td>{i + 1}</td>
-                    <td className="capitalize">{data.memberId.name}</td>
-                    <td>{data.memberId.email}</td>
-                    <td>{data.role || "Member"}</td>
-                    <td className="mx-auto cursor-pointer ">
-                      <MdOutlineDeleteOutline
-                        size={20}
-                        className="mx-auto"
-                        color="#8665eb"
-                      />
-                    </td>
-                    <td className="mx-auto cursor-pointer ">
-                      <CiEdit
-                        size={20}
-                        className="mx-auto"
-                        color="#8665eb"
-                        onClick={() => setVisible(true)}
-                      />
-                    </td>
+            {members.length ? (
+              <table className="table-fixed w-full border-separate border-spacing-1 border border-slate-100  border-t-[#7b68ee] border-t-4  rounded shadow-lg">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Delete</th>
+                    <th>Edit</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {members.map((data, i) => (
+                    <tr className="text-center items-center " key={i}>
+                      <td>{i + 1}</td>
+                      <td className="capitalize">{data.memberId.name}</td>
+                      <td>{data.memberId.email}</td>
+                      <td>{data.role || "Member"}</td>
+                      <td className="mx-auto cursor-pointer ">
+                        <MdOutlineDeleteOutline
+                          size={20}
+                          className="mx-auto"
+                          color="#8665eb"
+                        />
+                      </td>
+                      <td className="mx-auto cursor-pointer ">
+                        <CiEdit
+                          size={20}
+                          className="mx-auto"
+                          color="#8665eb"
+                          onClick={() => setVisible(true)}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="w-full shadow-lg text-center border-t-[#7b68ee] border-t-4 py-10">
+                <p className="text-xl font-bold text-gray-400">
+                  No members are present in this workspace.
+                </p>
+              </div>
+            )}
           </div>
         </>
       ),
