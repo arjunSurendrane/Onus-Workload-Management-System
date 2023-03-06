@@ -49,6 +49,7 @@ export default function TrialSidebar() {
   const [addDepartment, setAddDepartment] = useState(false);
   const [addProject, setAddProject] = useState(false);
   const [departmentID, setDepartmentID] = useState("");
+  const [roleMember, setRoleMember] = useState(false);
   const [workspace, setWorkspace] = useState(user.memberOf[0]);
   useEffect(() => {
     const workspaceData = JSON.parse(localStorage.getItem("Workspace"));
@@ -59,6 +60,7 @@ export default function TrialSidebar() {
       console.log({ workspaceData: data });
       setWorkspace(data[0]);
     }
+    workspace.role == "Member" ? setRoleMember(true) : setRoleMember(false);
     localStorage.setItem("Workspace", JSON.stringify({ ...workspace }));
   }, [user]);
 
@@ -80,6 +82,11 @@ export default function TrialSidebar() {
       "Workspace",
       JSON.stringify({ ...user.memberOf[key] })
     );
+    console.log(user.memberOf[key].role);
+    user.memberOf[key].role == "Member"
+      ? setRoleMember(true)
+      : setRoleMember(false);
+    console.log({ roleMember });
   };
   return (
     <>
@@ -157,18 +164,20 @@ export default function TrialSidebar() {
                   />
                 </div>
               </li>
-              <li className="bg-gray-200 rounded-lg overflow-hidden mt-2">
-                <a
-                  href="#"
-                  className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
-                  onClick={() => setAddDepartment(true)}
-                >
-                  <GrFormAdd size={20} />
-                  <span className="flex-1  px-2 whitespace-nowrap font-medium lg:text-xs text-[9px] text-gray-500 uppercase">
-                    Add Department
-                  </span>
-                </a>
-              </li>
+              {!roleMember && (
+                <li className="bg-gray-200 rounded-lg overflow-hidden mt-2">
+                  <a
+                    href="#"
+                    className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
+                    onClick={() => setAddDepartment(true)}
+                  >
+                    <GrFormAdd size={20} />
+                    <span className="flex-1  px-2 whitespace-nowrap font-medium lg:text-xs text-[9px] text-gray-500 uppercase">
+                      Add Department
+                    </span>
+                  </a>
+                </li>
+              )}
 
               {workspace &&
                 workspace?.workspace?.department.map((data, i) => (
@@ -189,21 +198,24 @@ export default function TrialSidebar() {
                     </a>
                     {showTask == `${i}` ? (
                       <ul className="px-5 mt-3">
-                        <li>
-                          <a
-                            href="#"
-                            className="flex items-center  p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
-                            onClick={() => {
-                              setAddProject(true);
-                              setDepartmentID(data._id);
-                            }}
-                          >
-                            <GrFormAdd size={20} />
-                            <span className="flex-1  px-2 whitespace-nowrap font-medium lg:text-xs text-[9px] text-gray-500 uppercase">
-                              Add Project
-                            </span>
-                          </a>
-                        </li>
+                        {!roleMember && (
+                          <li>
+                            <a
+                              href="#"
+                              className="flex items-center  p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
+                              onClick={() => {
+                                setAddProject(true);
+                                setDepartmentID(data._id);
+                              }}
+                            >
+                              <GrFormAdd size={20} />
+                              <span className="flex-1  px-2 whitespace-nowrap font-medium lg:text-xs text-[9px] text-gray-500 uppercase">
+                                Add Project
+                              </span>
+                            </a>
+                          </li>
+                        )}
+
                         {data.project.map((data, j) => (
                           <>
                             <li key={j}>
