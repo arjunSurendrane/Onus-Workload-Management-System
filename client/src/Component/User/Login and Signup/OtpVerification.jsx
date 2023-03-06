@@ -190,7 +190,9 @@ export default function OtpVerification() {
             d
           /> */}
         </div>
-        <p className="text-red-500 font-medium text-sm">{errorMsg}</p>
+        <p className="text-red-500 font-medium text-sm capitalize">
+          {errorMsg}
+        </p>
         <p className="mt-10 cursor-pointer" onClick={handleResend}>
           Resend Otp
         </p>

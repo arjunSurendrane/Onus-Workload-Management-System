@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useCookies } from "react-cookie";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { addDepartment } from "../../../api/apis";
+import { addDepartment, userAuthorization } from "../../../api/apis";
 import {
   createWorkspace,
   registerWorkspace,
@@ -37,14 +37,15 @@ export default function CreateWorkspaces({
       dispatch(updateProject(data));
       console.log({ workspace });
       const res = await axios.post(
-        "/workspace/create",
+        "/workspace",
         { ...workspace, projectName: data },
         {
           headers: { authorization: `Bearer ${cookie.userJwt}` },
         }
       );
       if (res.data.status == "success") {
-        localStorage.setItem("Workspace", JSON.stringify({ ...res.data.data }));
+        //localStorage.setItem("Workspace", JSON.stringify({ ...res.data.data }));
+        await userAuthorization(cookie.userJwt);
         history("/home");
       } else {
         setError("something went wrong!!!");

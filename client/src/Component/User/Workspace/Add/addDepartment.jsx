@@ -5,6 +5,7 @@ import React, { useEffect } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import { userAuthorization } from "../../../../api/apis";
 
 export default function AddDepartment({
   activeStep,
@@ -31,16 +32,13 @@ export default function AddDepartment({
     e.preventDefault();
     if (nextLink == "department") {
       const res = await axios.patch(
-        `/workspace/addDepartment/${workspace._id}`,
+        `/workspace/department/${workspace.workspace._id}`,
         { name: data },
         { headers: { authorization: `Bearer ${cookies.userJwt}` } }
       );
       if (res.data.status == "success") {
         console.log({ ...res.data.workspace });
-        localStorage.setItem(
-          "Workspace",
-          JSON.stringify({ ...res.data.workspace })
-        );
+        await userAuthorization(cookies.userJwt);
         return close();
       }
       setError("Something gone wrong");
@@ -49,17 +47,18 @@ export default function AddDepartment({
       }, 4000);
     } else {
       const res = await axios.post(
-        "/workspace/createProject",
-        { workspaceId: workspace._id, projectName: data, departmentID },
+        "/workspace/project",
+        {
+          workspaceId: workspace.workspace._id,
+          projectName: data,
+          departmentID,
+        },
         {
           headers: { authorization: `Bearer ${cookies.userJwt}` },
         }
       );
       if (res.data.status == "success") {
-        localStorage.setItem(
-          "Workspace",
-          JSON.stringify({ ...res.data.workspace })
-        );
+        await userAuthorization(cookies.userJwt);
         return close();
       }
       setError("Something gone wrong");
@@ -79,7 +78,7 @@ export default function AddDepartment({
             <div className="my-10">
               <div>
                 <Box sx={{ width: "100%" }}>
-                  <Stepper activeStep={activeStep} alternativeLabel>
+                  <Stepper activeStep={0} alternativeLabel>
                     <h1 className="mx-auto font-bold text-xl text-[#4f4299]">
                       {activeStep}
                     </h1>

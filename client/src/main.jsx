@@ -11,13 +11,11 @@ import { fetchUser } from "./features/Admin/allUserSlice";
 store.dispatch(fetchUser);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <Provider store={store}>
-        <CookiesProvider>
-          <App />
-        </CookiesProvider>
-      </Provider>
-    </BrowserRouter>
-  </React.StrictMode>
+  <BrowserRouter>
+    <Provider store={store}>
+      <CookiesProvider>
+        <App />
+      </CookiesProvider>
+    </Provider>
+  </BrowserRouter>
 );

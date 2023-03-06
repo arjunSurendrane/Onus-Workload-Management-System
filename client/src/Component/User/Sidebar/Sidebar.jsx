@@ -10,14 +10,18 @@ import { CgMoveTask } from "react-icons/cg";
 import { GiUpgrade } from "react-icons/gi";
 import { ImProfile } from "react-icons/im";
 import { MdSpaceDashboard, MdLeaderboard } from "react-icons/md";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+
 import { useCookies } from "react-cookie";
 import CreateWorkspace from "../../workSpaceForm";
 import { useNavigate } from "react-router-dom";
-import { Menu } from "@mui/material";
+import { Avatar, Menu } from "@mui/material";
 import { Option, Select } from "@material-tailwind/react";
 import AddDepartment from "../Workspace/Add/addDepartment";
 import { useDispatch } from "react-redux";
-import { createProjectId } from "../../../features/users/Project";
+import { createProjectId, addMembers } from "../../../features/users/Project";
+import { userAuthorization } from "../../../api/apis";
+import { FcVideoProjector } from "react-icons/fc";
 
 export default function TrialSidebar() {
   function Icon({ id, open }) {
@@ -47,9 +51,18 @@ export default function TrialSidebar() {
   const [departmentID, setDepartmentID] = useState("");
   const [workspace, setWorkspace] = useState(user.memberOf[0]);
   useEffect(() => {
-    // setWorkspace(JSON.parse(localStorage.getItem("User.memberOf")));
-    console.log({ userData: user.memberOf });
-  }, [addProject, addDepartment, workspace]);
+    const workspaceData = JSON.parse(localStorage.getItem("Workspace"));
+    console.log({ useEffectData: workspaceData });
+    if (workspaceData) {
+      dispatch(addMembers(workspaceData.workspace.members));
+      const data = user.memberOf.filter((el) => el._id == workspaceData._id);
+      console.log({ workspaceData: data });
+      setWorkspace(data[0]);
+    }
+    localStorage.setItem("Workspace", JSON.stringify({ ...workspace }));
+  }, [user]);
+
+  console.log({ workspace: workspace });
 
   const history = useNavigate();
   const handleOpen = (value) => {
@@ -57,12 +70,17 @@ export default function TrialSidebar() {
   };
   const handleChange = (id) => {
     dispatch(createProjectId(id));
+    const data = JSON.parse(localStorage.getItem("Workspace"));
+    dispatch(addMembers(data.workspace.members));
     history("/department/list");
   };
   const handleChangeWorkspace = (key) => {
     setWorkspace(user.memberOf[key]);
+    localStorage.setItem(
+      "Workspace",
+      JSON.stringify({ ...user.memberOf[key] })
+    );
   };
-  console.log({ workspace });
   return (
     <>
       <div className="md:visible invisible">
@@ -115,11 +133,11 @@ export default function TrialSidebar() {
               </li>
               <hr />
               <li className="cursor-pointer" onClick={() => setShowTask("-1")}>
-                <span className="flex justify-between text-sm ml-3 whitespace-nowrap text-gray-500 font-bold">
+                <div className="flex justify-between text-sm ml-3 whitespace-nowrap text-[#332778] font-bold ">
                   <select
                     name="workspace"
                     id=""
-                    className="focus:outline-none"
+                    className="focus:outline-none uppercase overflow-hidden w-[75%]"
                     onChange={(e) => handleChangeWorkspace(e.target.value)}
                   >
                     {user.memberOf.map((data, key) => (
@@ -130,9 +148,14 @@ export default function TrialSidebar() {
                   </select>
                   <IoSettingsOutline
                     size={20}
-                    onClick={() => history("/workspace/settings")}
+                    className="w-[25%]"
+                    onClick={() =>
+                      history(
+                        `/workspace/settings/${workspace?.workspace?._id}`
+                      )
+                    }
                   />
-                </span>
+                </div>
               </li>
               <li className="bg-gray-200 rounded-lg overflow-hidden mt-2">
                 <a
@@ -147,65 +170,64 @@ export default function TrialSidebar() {
                 </a>
               </li>
 
-              {workspace?.workspace?.department.map((data, i) => (
-                <li className=" rounded-lg overflow-hidden">
-                  <a
-                    href="#"
-                    className="flex items-center text-base font-normal text-gray-900 rounded-lg mt-2 hover:bg-gray-100 dark:hover:bg-gray-100"
-                    onClick={() => {
-                      setShowTask((showTask) =>
-                        showTask == `${i}` ? "-1" : `${i}`
-                      );
-                    }}
-                  >
-                    <div className="w-6  bg-[#251f49] h-6 rounded-full items-center flex justify-center">
-                      <p className="text-white text-[9px] font-bold">{"D"}</p>
-                    </div>
-                    <span className="flex-1 text-sm ml-3 whitespace-nowrap font-medium">
-                      {data?.departmentName}
-                    </span>
-                  </a>
-                  {showTask == `${i}` ? (
-                    <ul className="px-5 mt-3">
-                      <li>
-                        <a
-                          href="#"
-                          className="flex items-center  p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
-                          onClick={() => {
-                            setAddProject(true);
-                            setDepartmentID(data._id);
-                          }}
-                        >
-                          <GrFormAdd size={20} />
-                          <span className="flex-1  px-2 whitespace-nowrap font-medium lg:text-xs text-[9px] text-gray-500 uppercase">
-                            Add Project
-                          </span>
-                        </a>
-                      </li>
-                      {data.project.map((data, j) => (
-                        <>
-                          <li>
-                            <a
-                              href="#"
-                              className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
-                              onClick={() => {
-                                handleChange(data.projectId._id);
-                              }}
-                            >
-                              <CgMoveTask size={20} />
-                              <span className="flex-1 text-sm ml-3 whitespace-nowrap font-medium">
-                                {data?.projectId?.projectName}
-                              </span>
-                            </a>
-                          </li>
-                        </>
-                      ))}
-                    </ul>
-                  ) : (
-                    ""
-                  )}
-                </li>
-              ))}
+              {workspace &&
+                workspace?.workspace?.department.map((data, i) => (
+                  <li className=" rounded-lg overflow-hidden" key={i}>
+                    <a
+                      href="#"
+                      className="flex items-center text-base font-normal text-gray-900 rounded-lg mt-2 hover:bg-gray-100 dark:hover:bg-gray-100"
+                      onClick={() => {
+                        setShowTask((showTask) =>
+                          showTask == `${i}` ? "-1" : `${i}`
+                        );
+                      }}
+                    >
+                      <FcVideoProjector />
+                      <span className="flex-1 text-sm ml-3 whitespace-nowrap font-bold capitalize text-gray-700 overflow-hidden">
+                        {data?.departmentName}
+                      </span>
+                    </a>
+                    {showTask == `${i}` ? (
+                      <ul className="px-5 mt-3">
+                        <li>
+                          <a
+                            href="#"
+                            className="flex items-center  p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
+                            onClick={() => {
+                              setAddProject(true);
+                              setDepartmentID(data._id);
+                            }}
+                          >
+                            <GrFormAdd size={20} />
+                            <span className="flex-1  px-2 whitespace-nowrap font-medium lg:text-xs text-[9px] text-gray-500 uppercase">
+                              Add Project
+                            </span>
+                          </a>
+                        </li>
+                        {data.project.map((data, j) => (
+                          <>
+                            <li key={j}>
+                              <a
+                                href="#"
+                                className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
+                                onClick={() => {
+                                  handleChange(data.projectId._id);
+                                }}
+                              >
+                                <CgMoveTask size={20} />
+                                <span className="flex-1 text-sm ml-3 whitespace-nowrap font-medium overflow-hidden">
+                                  {data?.projectId?.projectName}
+                                </span>
+                              </a>
+                            </li>
+                          </>
+                        ))}
+                      </ul>
+                    ) : (
+                      ""
+                    )}
+                  </li>
+                ))}
               <hr />
               <li>
                 <a
@@ -274,7 +296,10 @@ export default function TrialSidebar() {
           nextLink={"department"}
           activeStep={"Create Department"}
           placeholder={"Enter Department Name"}
-          close={() => setAddDepartment(false)}
+          close={() => {
+            setUser(JSON.parse(localStorage.getItem("User")));
+            setAddDepartment(false);
+          }}
         />
       )}
       {addProject && (
@@ -284,7 +309,11 @@ export default function TrialSidebar() {
           activeStep={"Create Project"}
           placeholder={"Enter Project Name"}
           departmentID={departmentID}
-          close={() => setAddProject(false)}
+          close={() => {
+            setUser(JSON.parse(localStorage.getItem("User")));
+
+            setAddProject(false);
+          }}
         />
       )}
     </>

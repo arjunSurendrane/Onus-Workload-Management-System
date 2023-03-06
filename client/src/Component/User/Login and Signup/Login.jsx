@@ -45,10 +45,10 @@ export default function Login() {
       if (res.data.status === "success") {
         console.log(res.data.data.user);
         localStorage.setItem("User", JSON.stringify({ ...res.data.data.user }));
-        localStorage.setItem(
-          "Workspace",
-          JSON.stringify({ ...res.data.data.workspace })
-        );
+        // localStorage.setItem(
+        //   "Workspace",
+        //   JSON.stringify({ ...res.data.data.workspace })
+        // );
         setCookie("userJwt", res.data.token, { path: "/" });
         history("/home");
         setLoading(false);
@@ -117,7 +117,9 @@ export default function Login() {
                   <p className="text-red-500 font-medium text-sm">
                     {errors.password?.message}
                   </p>
-                  <p className="text-red-500 font-medium text-sm">{error}</p>
+                  <p className="text-red-500 font-medium text-sm capitalize">
+                    {error}
+                  </p>
                 </div>
               </div>
             </div>

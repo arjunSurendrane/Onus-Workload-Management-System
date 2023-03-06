@@ -31,28 +31,24 @@ export default function UserRoutes() {
     <div>
       <Sidebar />
       <Routes>
-        <Route path="/" element={<UserOutlet />}>
-          <Route path="home" element={<Home />} />
-          <Route path="notification" element={<Notification />} />
-          <Route path="online" element={<Online />} />
-          <Route path="chat" element={<Chat />} />
-          <Route path="department/list" element={<DepartmentList />} />
-          <Route path="department/board" element={<TaskBoard />} />
-          <Route path="task" element={<TaskView />} />
-          <Route path="leaderboard" element={<LeaderBoard />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="subscribe" element={<Subscribe />} />
-          <Route path="createWorkspace" element={<CreateWorkspace />} />
-          <Route path="createDepartment" element={<CreateDepartment />} />
-          <Route
-            path="workspace/settings"
-            element={<WorkspaceSettingsPage />}
-          />
-          <Route path="createProject" element={<CreateTaskFromLogin />} />
-          <Route path="addDepartment" element={<AddDepartmentPage />} />
-          <Route path="addProject" element={<AddProjectPage />} />
-          <Route path="addTask" element={<AddTask />} />
-        </Route>
+        <Route path="home" element={<Home />} />
+        <Route path="notification" element={<Notification />} />
+        <Route path="online" element={<Online />} />
+        <Route path="chat" element={<Chat />} />
+        <Route path="department/list" element={<DepartmentList />} />
+        <Route path="department/board" element={<TaskBoard />} />
+        <Route path="task" element={<TaskView />} />
+        <Route path="leaderboard" element={<LeaderBoard />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="subscribe" element={<Subscribe />} />
+
+        <Route
+          path="workspace/settings/:id"
+          element={<WorkspaceSettingsPage />}
+        />
+        <Route path="addDepartment" element={<AddDepartmentPage />} />
+        <Route path="addProject" element={<AddProjectPage />} />
+        <Route path="addTask" element={<AddTask />} />
       </Routes>
     </div>
   );

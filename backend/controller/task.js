@@ -38,7 +38,6 @@ export const createTask = catchAsync(async (req, res, next) => {
   let link;
   if (req.file) {
     const uploadResult = await uploadFile(req.file);
-    console.log({ uploadResult });
     link = uploadResult.Key;
   }
   const newTask = new Task({
@@ -159,9 +158,7 @@ export const assignTask = catchAsync(async (req, res, next) => {
  */
 export const TaskUpdate = catchAsync(async (req, res, next) => {
   const id = req.params.id;
-  console.log(id);
   const { taskName, description } = req.body;
   const data = await updateTask(id, { taskName, description }, req.user._id);
-  console.log(data);
   response(res, 200, { task: data });
 });

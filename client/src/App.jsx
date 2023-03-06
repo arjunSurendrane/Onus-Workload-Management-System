@@ -11,6 +11,11 @@ import AdminRoutes from "./routes/Admin/adminRoutes";
 import UserRoutes from "./routes/User/userRoutes";
 import axios from "./api/index";
 import { userAuthorization } from "./api/apis";
+import ConfrimInvitation from "./Pages/User/InviteConfirmation/confrimInvitation";
+import UserOutlet from "./routes/User/userOutlet";
+import CreateWorkspace from "./Pages/User/Workspace/createWorkspace";
+import CreateDepartment from "./Pages/User/Workspace/createDepartment";
+import CreateTaskFromLogin from "./Pages/User/Workspace/createTaskFromLogin";
 
 function App() {
   const [cookies, setCookies] = useCookies();
@@ -18,10 +23,6 @@ function App() {
     let res;
     if (cookies.userJwt) {
       res = userAuthorization(cookies.userJwt);
-    }
-    if (!res) {
-      localStorage.removeItem("Workspace");
-      localStorage.removeItem("User");
     }
   }, []);
   return (
@@ -31,12 +32,18 @@ function App() {
         <Route path="/admin" element={<AdminLoginPage />} />
         <Route path="/admin/*" element={<AdminRoutes />} />
         {/* ========User=========== */}
+        <Route path="/accept/:id" element={<ConfrimInvitation />} />
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<UserLogin />} />
         <Route path="/signup" element={<UserSignup />} />
         <Route path="/otpVerification" element={<OtpPage />} />
         <Route path="/forgotPassword" element={<ForgotPassword />} />
-        <Route path="/*" element={<UserRoutes />} />
+        <Route path="/" element={<UserOutlet />}>
+          <Route path="createWorkspace" element={<CreateWorkspace />} />
+          <Route path="createDepartment" element={<CreateDepartment />} />
+          <Route path="createProject" element={<CreateTaskFromLogin />} />
+          <Route path="/*" element={<UserRoutes />} />
+        </Route>
       </Routes>
     </div>
   );

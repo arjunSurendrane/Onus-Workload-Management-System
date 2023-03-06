@@ -11,8 +11,9 @@ export default function Home() {
   const history = useNavigate();
   console.log({ User: localStorage.getItem("User") });
   useEffect(() => {
-    if (!cookies.userJwt) {
-      history("/");
+    const data = JSON.parse(localStorage.getItem("User"));
+    if (data.memberOf.length == 0) {
+      history("/createWorkspace");
     }
   });
   return (

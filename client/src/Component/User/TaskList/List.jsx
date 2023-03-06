@@ -14,14 +14,17 @@ import { useSelector } from "react-redux";
 import { changeTaskPrioriy, deleteTask, fetchTask } from "../../../api/apis";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import toast, { Toaster } from "react-hot-toast";
+import UserList from "./userList";
 
 export default function List() {
   const history = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const [showUsers, setShowUsers] = useState(false);
   const [task, setTask] = useState();
   const [openAddTask, setOpenAddTask] = useState(false);
   const [cookies, setCookie] = useCookies();
   const [reload, setReload] = useState(false);
+  const [taskId, setTaskId] = useState();
   const today = new Date(Date.now());
   const navigate = useNavigate();
   const componentReload = () => {
@@ -108,7 +111,9 @@ export default function List() {
         <div
           className={`flex justify-between border shadow-sm py-2 ${
             new Date(data.dueDate) < today
-              ? "bg-red-200 text-red-700 font-bold"
+              ? data.status != "Completed"
+                ? "bg-red-200 text-red-700 font-bold"
+                : ""
               : ""
           }`}
         >
@@ -120,16 +125,30 @@ export default function List() {
           </div>
 
           <div className="flex justify-around w-[50%]">
-            <p className=" uppercase text-gray-700 font-bold ">
-              <AiOutlineUserAdd size={20} />
+            <p
+              className=" uppercase text-gray-700 font-bold "
+              onClick={() => {
+                setTaskId(data._id);
+                setShowUsers(true);
+              }}
+            >
+              {data.AssignedTo[0] ? (
+                <div className="bg-[#153e21] w-7 h-7 rounded-full grid place-content-center text-white uppercase">
+                  {data.AssignedTo[0].email.split("")[0]}
+                </div>
+              ) : (
+                <AiOutlineUserAdd size={20} />
+              )}
             </p>
             <p
               className={`${
                 new Date(data.dueDate) > today
                   ? "text-gray-700"
                   : new Date(data.dueDate) == today
-                  ? "text-yellow-500"
-                  : "text-red-400"
+                  ? data.status != Completed
+                    ? "text-yellow-500"
+                    : "text-red-400"
+                  : ""
               } uppercase md:text-[10px] text-[8px] font-bold `}
             >
               {data?.dueDate.split("T")[0]}
@@ -212,6 +231,15 @@ export default function List() {
                 deleteTask={(data) => deleteConfirmationMessage(data)}
                 taskId={task}
                 updatePriority={(id, priority) => updatePriority(id, priority)}
+              />
+            )}
+            {showUsers && (
+              <UserList
+                close={() => {
+                  mutate([...tasksData]);
+                  setShowUsers(false);
+                }}
+                taskId={taskId}
               />
             )}
           </>

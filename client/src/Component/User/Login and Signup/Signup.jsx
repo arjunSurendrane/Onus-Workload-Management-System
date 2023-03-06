@@ -145,7 +145,9 @@ export default function Signup() {
                   {errors.confirmPassword?.message}
                 </p>
                 <div className="text-center">
-                  <p className="text-red-500 text-sm font-medium">{error}</p>
+                  <p className="text-red-500 text-sm font-medium capitalize">
+                    {error}
+                  </p>
                 </div>
               </div>
             </div>
