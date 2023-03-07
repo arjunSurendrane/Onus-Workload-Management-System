@@ -13,42 +13,48 @@ export const urls = {
   assignTask: "/workspace/task/assign",
   deleteTask: "/workspace/task/",
   workspace: "/workspace",
-  groupAllTasks: "/workspace/task/:id/list",
-  getOneTask: "/workspace/task/",
+  groupAllTasks: "/workspace/tasks/:id/list",
+  getOneTask: "/workspace/task/:id",
   projects: "/workspace/projects/",
+  addSubTask: "/workspace/task/subtask/:id",
+  deleteSubtask: "/workspace/task/:id/:subtaskId",
 };
 
-export const sendRequest = async (
+export const sendRequest = async ({
   link,
   id = null,
   data = null,
-  token,
-  operation
-) => {
-  try {
-    if (operation == "get") {
-      const res = await axios.get(urls[link], {
-        headers: { authorization: `Bearer ${token}` },
-      });
-      return res;
-    }
-    if (operation == "post") {
-      const res = await axios.post(urls[link], data, {
-        headers: { authorization: `Bearer ${token}` },
-      });
-      return res;
-    }
-    if (operation == "patch") {
-      const res = await axios.patch(`${urls[link]}${id}`, data, {
-        headers: { authorization: `Bearer ${token}` },
-      });
-      return res;
-    }
-    if (operation == "delete") {
-      const res = await axios.delete(`${urls[link]}${id}`);
-      return res;
-    }
-  } catch (error) {
-    return error;
+  cookies: token,
+  subtaskId = null,
+  operation,
+}) => {
+  let url = urls[link];
+  if (id) url = url.replace(":id", id);
+  if (operation == "get") {
+    const res = await axios.get(url, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    console.log({ responseFromFetch: res });
+    return res;
+  }
+  if (operation == "post") {
+    const res = await axios.post(url, data, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    return res;
+  }
+  if (operation == "patch") {
+    const res = await axios.patch(url, data, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    return res;
+  }
+  if (operation == "delete") {
+    if (subtaskId) url = url.replace(":subtaskId", subtaskId);
+    console.log(url);
+    const res = await axios.delete(url, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    return res;
   }
 };

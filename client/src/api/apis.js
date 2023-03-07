@@ -20,16 +20,12 @@ export const addDepartment = async (id, cookie, data) => {
 
 export const fetchTask = async ({ id, cookies }) => {
   console.log("fetch task called");
-  try {
-    const res = await axios.get(`/workspace/tasks/${id}/list`, {
-      headers: { authorization: `Bearer ${cookies}` },
-    });
-    console.log(res);
-    localStorage.setItem("Tasks", JSON.stringify({ ...res.data.tasks }));
-    return res.data.tasks;
-  } catch (error) {
-    return error;
-  }
+  const res = await axios.get(`/workspace/tasks/${id}/list`, {
+    headers: { authorization: `Bearer ${cookies}` },
+  });
+  console.log(res);
+  localStorage.setItem("Tasks", JSON.stringify({ ...res.data.tasks }));
+  return res.data.tasks;
 };
 
 export const userAuthorization = async (data) => {

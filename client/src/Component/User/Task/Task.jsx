@@ -17,16 +17,18 @@ import {
   fetchTaskData,
 } from "../../../api/apis";
 import toast, { Toaster } from "react-hot-toast";
-import { RiFlag2Fill } from "react-icons/ri";
+import { RiDeleteBin6Line, RiFlag2Fill } from "react-icons/ri";
 import { url } from "../../../api";
 import { sendRequest } from "../../../api/sampleapi";
 import UserList from "../TaskList/userList";
+import AddSubtask from "./addSubtask";
 
 export default function Task({ setShowModal, taskId, deleteTask }) {
   const { register, handleSubmit } = useForm();
   const [attachment, setAttachment] = useState([]);
   const [cookies, setCokkies] = useCookies();
   const [showUsers, setShowUsers] = useState(false);
+  const [subtask, setSubTask] = useState(false);
   useEffect(() => {}, [attachment]);
 
   /**
@@ -87,6 +89,21 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
           toast.success("Change Task Status");
           mutate(task.data.task);
         }
+      }
+    };
+    const handleDeleteSubtask = async (id, subtaskId) => {
+      const res = await sendRequest({
+        link: "deleteSubtask",
+        id,
+        subtaskId,
+        cookies: cookies.userJwt,
+        operation: "delete",
+      });
+      if (res.status == 204) {
+        toast.success("Subtask deleted");
+        mutate(task);
+      } else {
+        toast.error("Something gone wrong");
       }
     };
     return (
@@ -206,8 +223,8 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                         </p>
                       </div>
                       <div className="text-center">
-                        <p className="text-[10px]  font-medium text-gray-500">
-                          Arjun
+                        <p className="text-[10px]  font-medium text-gray-500 capitalize">
+                          {taskData?.createdBy?.name}
                         </p>
                       </div>
                     </div>
@@ -219,7 +236,19 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                       </div>
                       <div className="text-center">
                         <p className="text-[10px]  font-medium text-gray-500">
-                          19/04/2023
+                          2019-02-02
+                        </p>
+                      </div>
+                    </div>
+                    <div className="border-r-2 px-4">
+                      <div>
+                        <p className="text-[10px] uppercase font-medium text-gray-500">
+                          Last Update
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px]  font-medium text-gray-500">
+                          {taskData?.update?.updateTime.split("T")[0]}
                         </p>
                       </div>
                     </div>
@@ -232,6 +261,7 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                       <div className="text-center">
                         <p className="text-[10px]  font-medium text-gray-500">
                           {/* {taskData?.dueDate.split("T")[0]} */}
+                          {taskData?.dueDate.split("T")[0]}
                         </p>
                       </div>
                     </div>
@@ -244,28 +274,56 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                     <div className="mt-5">
                       <p>{taskData?.description}</p>
                     </div>
-                    <div className="mt-5 w-full border-2 border-dotted rounded  text-center py-2 cursor-pointer">
+                    <div
+                      className="mt-5 w-full border-2 border-dotted rounded  text-center py-2 cursor-pointer"
+                      onClick={() => {
+                        setSubTask(true);
+                      }}
+                    >
                       <p className="text-sm">+ Add Subtask</p>
                     </div>
+                    {subtask && (
+                      <AddSubtask
+                        close={() => {
+                          setSubTask(false);
+                          mutate(task);
+                        }}
+                        id={taskData._id}
+                      />
+                    )}
                     <div className="mt-5">
-                      <ol>
-                        <li className="text-sm mt-3">
-                          <div className="flex justify-around">
-                            <div className="flex">
-                              <TbSubtask size={18} />
-                              subtaskOne
+                      {taskData?.subtasks?.map((data, i) => (
+                        <ol className="px-10">
+                          <li className="text-sm mt-3">
+                            <div className="">
+                              <div className="flex justify-between">
+                                <div className="flex">
+                                  <div>
+                                    <TbSubtask size={18} />
+                                  </div>
+
+                                  <p className="text-base font-medium text-gray-700 capitalize">
+                                    {data?.name}
+                                  </p>
+                                </div>
+
+                                <div
+                                  className="cursor-pointer"
+                                  onClick={() => {
+                                    handleDeleteSubtask(taskData._id, data._id);
+                                  }}
+                                >
+                                  <RiDeleteBin6Line />
+                                </div>
+                              </div>
+                              <div className="flex mt-3 mx-4 text-sm text-gray-600 font-medium">
+                                {data?.description}
+                              </div>
                             </div>
-                          </div>
-                        </li>
-                        <li className="text-sm mt-3">
-                          <div className="flex justify-around">
-                            <div className="flex">
-                              <TbSubtask size={18} />
-                              subtaskTwo
-                            </div>
-                          </div>
-                        </li>
-                      </ol>
+                          </li>
+                          <hr />
+                        </ol>
+                      ))}
                     </div>
                     <div className="mt-5">
                       <div>
