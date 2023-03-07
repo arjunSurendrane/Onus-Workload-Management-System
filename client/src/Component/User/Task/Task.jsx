@@ -19,24 +19,45 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import { RiFlag2Fill } from "react-icons/ri";
 import { url } from "../../../api";
+import { sendRequest } from "../../../api/sampleapi";
+import UserList from "../TaskList/userList";
 
 export default function Task({ setShowModal, taskId, deleteTask }) {
   const { register, handleSubmit } = useForm();
   const [attachment, setAttachment] = useState([]);
   const [cookies, setCokkies] = useCookies();
+  const [showUsers, setShowUsers] = useState(false);
   useEffect(() => {}, [attachment]);
+
+  /**
+   * fetch task data with the help of swr
+   */
   const {
     isLoading,
     error,
     mutate,
     data: task,
-  } = useSWR({ id: taskId, cookie: cookies.userJwt }, fetchTaskData);
+  } = useSWR(
+    {
+      link: "getOneTask",
+      id: taskId,
+      cookies: cookies.userJwt,
+      operation: "get",
+    },
+    sendRequest
+  );
+
+  /**
+   * check response status
+   */
   if (isLoading) {
     console.log("loading....");
   } else if (error) {
     console.log(error);
+    return <div>Error...!</div>;
   } else {
-    let taskData = task || {};
+    console.log({ taskDataINTaskPage: task });
+    let taskData = task.data.task || {};
     const onSubmit = (data) => {
       const file = data.target.files[0];
       const key = file.name;
@@ -50,7 +71,7 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
       const task = await changeTaskPrioriy(id, priority, cookies.userJwt);
       if (task.data.status == "success") {
         toast.success("update priority");
-        mutate({ ...task });
+        mutate(task.data.task);
       }
     };
     const handleChangeStatus = async (id, statusData) => {
@@ -64,7 +85,7 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
         const res = await changeStatus(id, status, cookies.userJwt);
         if (res) {
           toast.success("Change Task Status");
-          mutate({ ...task });
+          mutate(task.data.task);
         }
       }
     };
@@ -127,9 +148,29 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                             {">"}
                           </div>
                         </div>
-                        <div className="py-2 ">
-                          <AiOutlineUserAdd size={20} color={"gray"} />
+                        <div
+                          className="py-2 "
+                          onClick={() => {
+                            setShowUsers(true);
+                          }}
+                        >
+                          {taskData?.Assigned ? (
+                            <div className="bg-[#153e21] w-7 h-7 rounded-full grid place-content-center text-white uppercase">
+                              {taskData?.Assigned?.email.split("")[0]}
+                            </div>
+                          ) : (
+                            <AiOutlineUserAdd size={20} />
+                          )}
                         </div>
+                        {showUsers && (
+                          <UserList
+                            close={() => {
+                              setShowUsers(false);
+                              mutate(task);
+                            }}
+                            taskId={taskId}
+                          />
+                        )}
                         <div
                           className="py-2 "
                           onClick={() =>
@@ -214,9 +255,6 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                               <TbSubtask size={18} />
                               subtaskOne
                             </div>
-                            <div>
-                              <AiOutlineUserAdd size={20} color={"gray"} />{" "}
-                            </div>
                           </div>
                         </li>
                         <li className="text-sm mt-3">
@@ -224,9 +262,6 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                             <div className="flex">
                               <TbSubtask size={18} />
                               subtaskTwo
-                            </div>
-                            <div>
-                              <AiOutlineUserAdd size={20} color={"gray"} />{" "}
                             </div>
                           </div>
                         </li>

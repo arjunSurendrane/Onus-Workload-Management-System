@@ -11,10 +11,16 @@ import { useCookies } from "react-cookie";
 import { fetchProductId } from "../../../features/users/Project";
 import useSWR from "swr";
 import { useSelector } from "react-redux";
-import { changeTaskPrioriy, deleteTask, fetchTask } from "../../../api/apis";
+import {
+  changeTaskPrioriy,
+  deleteTask,
+  fetchData,
+  fetchTask,
+} from "../../../api/apis";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import toast, { Toaster } from "react-hot-toast";
 import UserList from "./userList";
+import { sendRequest } from "../../../api/sampleapi";
 
 export default function List() {
   const history = useNavigate();
@@ -40,7 +46,15 @@ export default function List() {
     error,
     data: tasksData,
     mutate,
-  } = useSWR({ id: productID, cookies: cookies.userJwt }, fetchTask);
+  } = useSWR(
+    {
+      link: "groupAllTasks",
+      id: productID,
+      cookies: cookies.userJwt,
+      operation: "get",
+    },
+    sendRequest
+  );
 
   /**
    * Check isloading/error/data
@@ -49,9 +63,10 @@ export default function List() {
     console.log("loading...");
   } else if (error) {
     console.log("error");
+    return <div>Error</div>;
   } else {
     console.log({ fetchData: tasksData });
-    const tasks = tasksData || [];
+    const tasks = tasksData?.data?.tasks || [];
 
     let inProgress, ToDo, Completed;
 
@@ -73,7 +88,7 @@ export default function List() {
       console.log({ res });
       if (res) {
         toast.success("Task deleted");
-        mutate([...tasksData]);
+        mutate([...tasksData.data.tasks]);
         setShowModal(false);
       }
     };
@@ -232,6 +247,7 @@ export default function List() {
               <Task
                 setShowModal={() => {
                   setShowModal(false);
+                  console.log(tasksData);
                   mutate([...tasksData]);
                 }}
                 deleteTask={(data) => deleteConfirmationMessage(data)}
@@ -242,7 +258,7 @@ export default function List() {
             {showUsers && (
               <UserList
                 close={() => {
-                  mutate([...tasksData]);
+                  mutate(tasksData);
                   setShowUsers(false);
                 }}
                 taskId={taskId}
