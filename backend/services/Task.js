@@ -63,22 +63,23 @@ export const getTask = async (id) => {
  * @param {Object} data - Updated data in object format
  * @returns {Object} - Task data get from mongodb
  */
-export const updateTask = catchError(async (params) => {
-  const [id, data, userid] = params;
+export const updateTask = async (id, data, userid) => {
   const update = {
     updatedBy: userid,
     updateTime: new Date(Date.now()),
   };
-  console.log({ ...data, update, id });
-  const task = await Task.findByIdAndUpdate(id, data, {
-    new: true,
-    lean: true,
-  });
-  console.log({ task });
+  const task = await Task.findByIdAndUpdate(
+    id,
+    { ...data, update },
+    {
+      new: true,
+      lean: true,
+    }
+  );
   deleteCache(`groupedTask-${task.projectID._id}`);
   updateCacheMemory(`task-${id}`, task);
   return task;
-});
+};
 
 /**
  * Delete Task

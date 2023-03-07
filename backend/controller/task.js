@@ -145,6 +145,7 @@ export const deleteTask = catchAsync(async (req, res, next) => {
  * @param {object} res - send task and success message to client
  */
 export const assignTask = catchAsync(async (req, res, next) => {
+  console.log("==========");
   const { taskId, userId } = req.body;
   const task = await updateTask(taskId, { Assigned: userId }, req.user._id);
   res.status(200).json({ staus: "success", task });
@@ -161,4 +162,39 @@ export const TaskUpdate = catchAsync(async (req, res, next) => {
   const { taskName, description } = req.body;
   const data = await updateTask(id, { taskName, description }, req.user._id);
   response(res, 200, { task: data });
+});
+
+/**
+ * Add Subtask
+ * PATCH /task/subtask/:id
+ * @param {Object} req - request contain name and description
+ * @param {Object} res - send success message and task data
+ */
+export const addSubTask = catchAsync(async (req, res, next) => {
+  const id = req.params.id;
+  const { name, description } = req.body;
+  const data = await updateTask(
+    id,
+    { $push: { subtasks: { name, description } } },
+    req.user._id
+  );
+  console.log(data);
+  response(res, 200, { task: data });
+});
+
+/**
+ * Delete Subtask
+ * DELETE /task/:id/:subtaskId
+ */
+export const deleteSubtask = catchAsync(async (req, res, next) => {
+  const { id, subtaskId } = req.params;
+  const data = await updateTask(
+    id,
+    {
+      $pull: { subtasks: { _id: subtaskId } },
+    },
+    req.user._id
+  );
+  console.log(data);
+  response(res, 204, { task: data });
 });

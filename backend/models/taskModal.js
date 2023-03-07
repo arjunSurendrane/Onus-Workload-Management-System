@@ -35,10 +35,7 @@ const taskSchema = new mongoose.Schema({
   subtasks: [
     {
       name: String,
-      Assigned: {
-        type: mongoose.Types.ObjectId,
-        ref: "User",
-      },
+      description: String,
     },
   ],
   attachedfiles: [{ link: String }],
@@ -57,7 +54,7 @@ taskSchema.virtual("project", {
 });
 
 taskSchema.pre(/^find/, function (next) {
-  this.populate(["Assigned", "projectID"]);
+  this.populate(["Assigned", "projectID", "createdBy"]);
   next();
 });
 

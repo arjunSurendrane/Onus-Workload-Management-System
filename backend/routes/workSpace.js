@@ -11,6 +11,8 @@ import {
   getOneTask,
   streamAttachedFile,
   TaskUpdate,
+  addSubTask,
+  deleteSubtask,
 } from "../controller/task.js";
 import {
   addDepartment,
@@ -37,10 +39,12 @@ router.post("/project", createProject);
 router.post("/invitation/:id", sendInvitation);
 router.patch("/department/:id", addDepartment);
 router.patch("/task/status/:id", changeTaskStatus);
+router.patch("/task/subtask/:id", addSubTask);
 router.patch("/task/priority/:id", changePriority);
-router.patch("/task/:id", TaskUpdate);
 router.patch("/task/assign", assignTask);
+router.patch("/task/:id", TaskUpdate);
 router.delete("/task/:id", deleteTask);
+router.delete("/task/:id/:subtaskId", deleteSubtask);
 router.get("/", getWorkspace);
 router.get("/tasks/:id/list", groupAllTaks);
 router.get("/task/:id", getOneTask);
