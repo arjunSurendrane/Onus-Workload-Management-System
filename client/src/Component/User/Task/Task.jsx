@@ -73,7 +73,7 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
       const task = await changeTaskPrioriy(id, priority, cookies.userJwt);
       if (task.data.status == "success") {
         toast.success("update priority");
-        mutate(task.data.task);
+        // mutate({ ...task });
       }
     };
     const handleChangeStatus = async (id, statusData) => {
@@ -270,9 +270,11 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
 
                 <div className="flex justify-between px-10  max-h-[600px] overflow-y-scroll overflow-x-clip">
                   <div className="w-[50%] border-r-2 px-3">
-                    <h1 className="text-2xl">{taskData?.taskName}</h1>
+                    <h1 className="text-2xl capitalize">
+                      {taskData?.taskName}
+                    </h1>
                     <div className="mt-5">
-                      <p>{taskData?.description}</p>
+                      <p className="normal-case">{taskData?.description}</p>
                     </div>
                     <div
                       className="mt-5 w-full border-2 border-dotted rounded  text-center py-2 cursor-pointer"
