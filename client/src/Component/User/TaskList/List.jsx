@@ -65,7 +65,6 @@ export default function List() {
     console.log("error");
     return <div>Error</div>;
   } else {
-    console.log({ fetchData: tasksData });
     const tasks = tasksData?.data?.tasks || [];
 
     let inProgress, ToDo, Completed;

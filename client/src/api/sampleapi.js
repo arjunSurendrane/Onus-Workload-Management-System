@@ -9,7 +9,7 @@ export const urls = {
   addDepartment: "/workspace/department/",
   changeTaskStatus: "/workspace/task/status/",
   changePriority: "/workspace/task/priority/",
-  taskUpdate: "/workspace/task/",
+  taskUpdate: "/workspace/task/:id",
   assignTask: "/workspace/task/assign",
   deleteTask: "/workspace/task/",
   workspace: "/workspace",
@@ -18,6 +18,7 @@ export const urls = {
   projects: "/workspace/projects/",
   addSubTask: "/workspace/task/subtask/:id",
   deleteSubtask: "/workspace/task/:id/:subtaskId",
+  submitTaskFile: "/workspace/task/submit/:id",
 };
 
 export const sendRequest = async ({
@@ -34,7 +35,6 @@ export const sendRequest = async ({
     const res = await axios.get(url, {
       headers: { authorization: `Bearer ${token}` },
     });
-    console.log({ responseFromFetch: res });
     return res;
   }
   if (operation == "post") {
@@ -44,6 +44,7 @@ export const sendRequest = async ({
     return res;
   }
   if (operation == "patch") {
+    console.log({ data });
     const res = await axios.patch(url, data, {
       headers: { authorization: `Bearer ${token}` },
     });
@@ -51,7 +52,6 @@ export const sendRequest = async ({
   }
   if (operation == "delete") {
     if (subtaskId) url = url.replace(":subtaskId", subtaskId);
-    console.log(url);
     const res = await axios.delete(url, {
       headers: { authorization: `Bearer ${token}` },
     });

@@ -22,6 +22,7 @@ import { url } from "../../../api";
 import { sendRequest } from "../../../api/sampleapi";
 import UserList from "../TaskList/userList";
 import AddSubtask from "./addSubtask";
+import AddTask from "./addTask";
 
 export default function Task({ setShowModal, taskId, deleteTask }) {
   const { register, handleSubmit } = useForm();
@@ -29,6 +30,7 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
   const [cookies, setCokkies] = useCookies();
   const [showUsers, setShowUsers] = useState(false);
   const [subtask, setSubTask] = useState(false);
+  const [editTask, setEditTask] = useState(false);
   useEffect(() => {}, [attachment]);
 
   /**
@@ -60,14 +62,25 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
   } else {
     console.log({ taskDataINTaskPage: task });
     let taskData = task.data.task || {};
-    const onSubmit = (data) => {
+    const onSubmit = async (data) => {
       const file = data.target.files[0];
-      const key = file.name;
-      console.log({ file });
-      setAttachment([...attachment, { file }]);
-      console.log(data);
-      console.log(data.target.files[0]);
-      console.log({ attachment });
+      console.log({ file: [file] });
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await sendRequest({
+        id: taskData._id,
+        data: formData,
+        link: "submitTaskFile",
+        operation: "patch",
+        cookies: cookies.userJwt,
+      });
+      console.log({ responseFromSubmit: res });
+      if (res.data.status == "success") {
+        toast.success("submit file");
+      } else {
+        toast.error("Something gone wrong");
+      }
     };
     const updatePriority = async (id, priority) => {
       const task = await changeTaskPrioriy(id, priority, cookies.userJwt);
@@ -202,9 +215,6 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                         </div>
                       </div>
                       <div className="flex">
-                        <div className="py-2 mx-2 cursor-pointer">
-                          <CiEdit size={20} color={"gray"} />
-                        </div>
                         <div
                           className="py-2 mx-2 cursor-pointer"
                           onClick={() => deleteTask(taskData)}
@@ -357,43 +367,28 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                       </div>
                     </div>
                     <div className="mt-5">
-                      {attachment[0] && (
+                      {taskData?.submitfile && (
                         <>
                           <div>
                             <h1 className="font-medium">Submition</h1>
                           </div>
                           <div className=" grid grid-cols-3 gap-4 mr-2 ">
-                            {attachment.map((data, key) => (
-                              <div
-                                className="h-32 w-full  bg-gray-100 shadow-lg m-2 text-center overflow-hidden"
-                                key={key}
-                              >
-                                <div
-                                  className="p-1 absolute"
-                                  onClick={() => {
-                                    attachment.splice(key, key);
-                                    console.log(attachment);
-                                  }}
-                                >
-                                  <MdOutlineDeleteOutline color={"gray"} />
-                                </div>
-                                {data.file.name.split(".")[1] == "JPG" ? (
-                                  <FcImageFile
-                                    size={30}
-                                    className="mt-10 mx-auto"
-                                  />
-                                ) : (
-                                  <FcDocument
-                                    size={30}
-                                    className="mt-10 mx-auto"
-                                  />
-                                )}
+                            <a
+                              href={`${url}/workspace/task/attachedFile/${taskData.submitfile}`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              <div className="h-32 w-full  bg-gray-100 shadow-lg m-2 text-center overflow-hidden">
+                                <FcDocument
+                                  size={30}
+                                  className="mt-10 mx-auto"
+                                />
 
                                 <p className="text-[9px] font-bold">
-                                  {data.file?.name}
+                                  {taskData?.submitfile}
                                 </p>
                               </div>
-                            ))}
+                            </a>
                           </div>
                         </>
                       )}
