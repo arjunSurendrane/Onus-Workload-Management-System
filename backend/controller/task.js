@@ -2,7 +2,7 @@ import Task from "../models/taskModal.js";
 import {
   deleteTaskUsingId,
   getTask,
-  groupTasks,
+  taskAggregateWith4PipeLine,
   updateTask,
 } from "../services/Task.js";
 import { updateProjectWithTaskData } from "../services/Project.js";
@@ -10,6 +10,7 @@ import { getFileStream, uploadFile } from "../config/s3.js";
 import catchAsync from "../utils/catchAsync.js";
 import { response } from "./response.js";
 import { createNotification } from "../services/notification.js";
+import mongoose from "mongoose";
 
 /**
  * Group Task
@@ -20,11 +21,25 @@ import { createNotification } from "../services/notification.js";
  */
 export const groupAllTaks = catchAsync(async (req, res, next) => {
   const projectID = req.params.id;
-  const tasks = await groupTasks(projectID);
-  res.status(200).json({
-    status: "success",
-    tasks,
+  const tasks = await taskAggregateWith4PipeLine({
+    matchData: {
+      projectID: mongoose.Types.ObjectId(`${projectID}`),
+    },
+    lookupData: {
+      from: "users",
+      localField: "Assigned",
+      foreignField: "_id",
+      as: "AssignedTo",
+    },
+    projectData: {
+      "AssignedTo.password": 0,
+    },
+    groupData: {
+      _id: "$status",
+      data: { $push: "$$ROOT" },
+    },
   });
+  response(res, 200, { tasks });
 });
 
 /**

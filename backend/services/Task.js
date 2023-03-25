@@ -5,45 +5,6 @@ import {
   getOrSetFunction,
   updateCacheMemory,
 } from "../redis/redisFunction.js";
-import asyncHandler from "express-async-handler";
-import catchError from "../utils/serviceErrorHandler.js";
-
-/**
- * Group all task usign its status
- * @param {String} projectID - Project id
- * @returns {Object} - return object
- */
-export const groupTasks = async (projectID) => {
-  const data = await getOrSetFunction(`groupedTask-${projectID}`, () => {
-    return Task.aggregate([
-      {
-        $match: {
-          projectID: mongoose.Types.ObjectId(`${projectID}`),
-        },
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "Assigned",
-          foreignField: "_id",
-          as: "AssignedTo",
-        },
-      },
-      {
-        $project: {
-          "AssignedTo.password": 0,
-        },
-      },
-      {
-        $group: {
-          _id: "$status",
-          data: { $push: "$$ROOT" },
-        },
-      },
-    ]);
-  });
-  return data;
-};
 
 /**
  * Aggregate Task data with 4 pipeline
@@ -105,6 +66,7 @@ export const updateTask = async (id, data, userid) => {
       upsert: true,
     }
   );
+  console.log(task);
   deleteCache(`groupedTask-${task.projectID._id}`);
   updateCacheMemory(`task-${id}`, task);
   return task;
@@ -130,34 +92,13 @@ export const deleteTaskUsingId = async (id) => {
  * @returns {Object} - return task data
  */
 export const aggregateData = async ({ matchData, groupData }) => {
+  console.log(matchData);
   return await Task.aggregate([
     {
       $match: matchData,
     },
     {
       $group: groupData,
-    },
-  ]);
-};
-
-/**
- * Find workspace total workload status
- * @param {String} workspaceId  - workspace id
- * @returns - return array
- * it return workspace workload with its status and count
- */
-export const workspaceWorkloadData = async (workspaceId) => {
-  return await Task.aggregate([
-    {
-      $match: {
-        workspaceId: mongoose.Types.ObjectId(`${workspaceId}`),
-      },
-    },
-    {
-      $group: {
-        _id: "$status",
-        count: { $sum: 1 },
-      },
     },
   ]);
 };
@@ -194,29 +135,6 @@ export const workspaceWorkloadWithAssignedUsers = async (workspaceId) => {
         count: 1,
         "user.name": 1,
         "user.email": 1,
-      },
-    },
-  ]);
-};
-
-/**
- * It give single user workload
- * @param {*} workspaceId - workspace id
- * @param {*} userId - user id
- * @returns  {array} - task data
- */
-export const usersWorkload = async (workspaceId, userId) => {
-  return await Task.aggregate([
-    {
-      $match: {
-        Assigned: mongoose.Types.ObjectId(`${userId}`),
-        workspaceId: mongoose.Types.ObjectId(`${workspaceId}`),
-      },
-    },
-    {
-      $group: {
-        _id: "$status",
-        data: { $push: "$$ROOT" },
       },
     },
   ]);
