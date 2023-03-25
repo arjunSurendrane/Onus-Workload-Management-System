@@ -1,8 +1,10 @@
 import { capturePayment, createOrder } from "../config/paypal.js";
 import { getCacheData, updateCacheMemory } from "../redis/redisFunction.js";
-import { updatePlan } from "../services/Workspace.js";
+import { updateNestedDocument } from "../services/Workspace.js";
 import catchAsync from "../utils/catchAsync.js";
-
+/**
+ * Create Order
+ */
 export const create = catchAsync(async (req, res, next) => {
   const order = await createOrder(req.body);
   console.log(order.status);
@@ -14,12 +16,15 @@ export const create = catchAsync(async (req, res, next) => {
   res.json(order);
 });
 
+/**
+ * capture payment
+ */
 export const catchPayment = catchAsync(async (req, res, next) => {
   const { orderID } = req.body;
   const captureData = await capturePayment(orderID);
   if ((captureData.status = "COMPLETED")) {
     const order = await getCacheData(`payment-${req.user._id}`);
-    await updatePlan(req.user._id, order.plan);
+    await updateNestedDocument({ Lead: req.user._id }, { plan: order.plan });
   }
   res.json({ captureData });
 });
