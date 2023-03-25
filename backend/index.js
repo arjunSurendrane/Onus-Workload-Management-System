@@ -36,6 +36,7 @@ connectToDB();
 /**
  * Route setup
  */
+// app.use('/api/auth')
 app.use("/api/admin", adminRoute);
 app.use("/api/user", userRoute);
 app.use("/api/workspace", workSpaceRoute);

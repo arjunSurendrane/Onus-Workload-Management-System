@@ -26,7 +26,6 @@ import {
   membersWorkload,
   sendInvitation,
   updateRole,
-  workspaceMembers,
   workspaceWorkload,
 } from "../controller/workspace.js";
 import multer from "multer";
@@ -69,7 +68,6 @@ router.get("/members/:id", findMembers);
 router.get("/:id/members/:userId/workload", membersWorkload);
 router.get("/:id/workload", workspaceWorkload);
 router.get("/:id", getWorkspaceWithId);
-router.get("/member/:id", workspaceMembers);
 router.get("/tasks/:id/list", groupAllTaks);
 router.get("/task/:id", getOneTask);
 router.get("/projects/:id", projects);

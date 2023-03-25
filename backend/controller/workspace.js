@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Project from "../models/projectModal.js";
 import Workspace from "../models/workSpaceModal.js";
 import {
@@ -7,8 +8,7 @@ import {
 } from "../redis/redisFunction.js";
 import { GenerateIvitationMail } from "../services/Nodemailer.js";
 import {
-  usersWorkload,
-  workspaceWorkloadData,
+  aggregateData,
   workspaceWorkloadWithAssignedUsers,
 } from "../services/Task.js";
 import {
@@ -18,10 +18,9 @@ import {
   userWorkspaces,
 } from "../services/User.js";
 import {
-  addDepartmentIntoWorkspace,
   findWorkspace,
   getWorkspaceusingId,
-  workspaceMember,
+  updateWorkspace,
 } from "../services/Workspace.js";
 import AppError from "../utils/appError.js";
 import catchAsync from "../utils/catchAsync.js";
@@ -41,6 +40,9 @@ const successresponse = async (res, statusCode, data) => {
   });
 };
 
+/**
+ * Get Workspace
+ */
 export const getWorkspaceWithId = catchAsync(async (req, res) => {
   const { id } = req.params;
   const workspace = await getWorkspaceusingId(id);
@@ -75,7 +77,7 @@ export const createWorkspace = catchAsync(async (req, res, next) => {
       $push: { memberOf: { workspace: workspace._id }, role: "owner" },
     }),
   ]);
-  successresponse(res, 200, workspaceDB);
+  response(res, 200, { workspaceDB });
 });
 
 /**
@@ -100,8 +102,12 @@ export const getWorkspace = catchAsync(async (req, res, next) => {
 export const addDepartment = catchAsync(async (req, res, next) => {
   const departmentName = req.body.name;
   const id = req.params.id;
-  const workspace = await addDepartmentIntoWorkspace(id, departmentName);
-  res.status(200).json({ status: "success", workspace });
+  const workspace = await updateWorkspace(id, {
+    $push: {
+      department: { departmentName },
+    },
+  });
+  response(res, 200, { workspace });
 });
 
 /**
@@ -163,17 +169,6 @@ export const deleteMember = catchAsync(async (req, res, next) => {
 });
 
 /**
- * Update Workspace
- * GET /workspace/member/:id
- * params have workspace id
- */
-export const workspaceMembers = catchAsync(async (req, res, next) => {
-  const { id } = req.params;
-  const users = await workspaceMember(id);
-  response(res, 200, { users });
-});
-
-/**
  * Find Members in Workspace
  * GET /membres/:id
  * id => workspace id
@@ -190,7 +185,16 @@ export const findMembers = catchAsync(async (req, res, next) => {
  */
 export const membersWorkload = catchAsync(async (req, res, next) => {
   const { id, userId } = req.params;
-  const userbasedWorkload = await usersWorkload(id, userId);
+  const userbasedWorkload = await aggregateData({
+    matchData: {
+      Assigned: mongoose.Types.ObjectId(`${userId}`),
+      workspaceId: mongoose.Types.ObjectId(`${id}`),
+    },
+    groupData: {
+      _id: "$status",
+      data: { $push: "$$ROOT" },
+    },
+  });
   res.json({
     userbasedWorkload,
   });
@@ -202,7 +206,15 @@ export const membersWorkload = catchAsync(async (req, res, next) => {
 export const workspaceWorkload = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const [workload, usersWorkload] = await Promise.all([
-    workspaceWorkloadData(id),
+    aggregateData({
+      matchData: {
+        workspaceId: mongoose.Types.ObjectId(`${id}`),
+      },
+      groupData: {
+        _id: "$status",
+        count: { $sum: 1 },
+      },
+    }),
     workspaceWorkloadWithAssignedUsers(id),
   ]);
   response(res, 200, { workload, usersWorkload });

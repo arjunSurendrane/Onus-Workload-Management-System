@@ -1,6 +1,10 @@
 import Workspace from "../models/workSpaceModal.js";
 import { getOrSetFunction, updateCacheMemory } from "../redis/redisFunction.js";
 
+/**
+ * Get All Workspace Data
+ * @returns {Array}
+ */
 export const findWorkspace = async () => {
   try {
     console.log("compiler at findWorkspace");
@@ -16,75 +20,39 @@ export const findWorkspace = async () => {
   }
 };
 
+/**
+ * Update Workspace
+ * @param {String} id
+ * @param {Object} data - updated data in object type
+ * @returns {Object}
+ */
 export const updateWorkspace = async (id, data) => {
-  const res = await Workspace.findByIdAndUpdate(
-    id,
-    data,
-    { new: true },
-    { upsert: true }
-  );
-  updateCacheMemory(`workspace-${res._id}`, res);
-  return res;
-};
-
-export const addDepartmentIntoWorkspace = async (id, data) => {
-  const res = await Workspace.findByIdAndUpdate(
-    id,
-    {
-      $push: {
-        department: { departmentName: data },
-      },
-    },
-    { new: true, upsert: true }
-  );
-  updateCacheMemory(`workspace-${res._id}`, res);
-  console.log({ res });
-  return res;
-};
-
-export const addMemberIntoWorkspace = async (id, memberId, role) => {
-  const res = await Workspace.findByIdAndUpdate(
-    id,
-    {
-      $push: {
-        members: { memberId, role },
-      },
-    },
-    { new: true, upsert: true }
-  );
-  return res;
-};
-
-export const updateProjectInWorkspace = async (
-  _id,
-  departmentID,
-  projectId
-) => {
-  return await Workspace.findOneAndUpdate(
-    { _id, "department._id": departmentID },
-    { $push: { "department.$.project": { projectId } } },
-    { new: true }
-  );
-};
-
-export const deleteMemberFromWorkspace = async (id, userId) => {
-  return await Workspace.findByIdAndUpdate(id, {
-    $pull: { members: { _id: userId } },
+  const res = await Workspace.findByIdAndUpdate(id, data, {
+    new: true,
+    upsert: true,
   });
+  updateCacheMemory(`workspace-${res._id}`, res);
+  return res;
 };
 
-export const workspaceMember = async (id) => {
-  const workspace = await Workspace.findById(id);
-  return workspace.members;
+/**
+ * update nested object
+ * @param {String} _id
+ * @param {String} departmentID
+ * @param {String} projectId
+ * @returns {Object}
+ */
+export const updateNestedDocument = async (findData, updateData) => {
+  return await Workspace.findOneAndUpdate(findData, updateData, { new: true });
 };
 
+/**
+ * Get workspace data
+ * @param {String} id
+ * @returns {Object}
+ */
 export const getWorkspaceusingId = async (id) => {
-  console.log(id);
   return await Workspace.findById(id);
-};
-
-export const findUserWorkspaces = async (userId) => {
-  return await Workspace.find({ "members.memberId": userId });
 };
 
 /**
@@ -97,7 +65,3 @@ export const updatePlan = async (Lead, plan) => {
   const data = await Workspace.findOneAndUpdate({ Lead }, { plan });
   console.log(data);
 };
-
-// export const workload = async(id,userid)=>{
-//   const data = await
-// }
