@@ -1,7 +1,8 @@
 import Project from "../models/projectModal.js";
 import { groupAllTask } from "../services/Project.js";
-import { updateProjectInWorkspace } from "../services/Workspace.js";
+import { updateNestedDocument } from "../services/Workspace.js";
 import catchAsync from "../utils/catchAsync.js";
+import { response } from "./response.js";
 
 /**
  * Success response
@@ -24,20 +25,17 @@ const successresponse = async (res, statusCode, data) => {
  */
 export const createProject = catchAsync(async (req, res) => {
   const { projectName, workspaceId, departmentID } = req.body;
-  const id = req.params.id;
   const project = new Project({
     projectName,
   });
   const [workspace, projectSave] = await Promise.all([
-    updateProjectInWorkspace(workspaceId, departmentID, project._id),
+    updateNestedDocument(
+      { _id: workspaceId, "department._id": departmentID },
+      { $push: { "department.$.project": { projectId: project._id } } }
+    ),
     project.save(),
   ]);
-  console.log({ workspace });
-  res.status(200).json({
-    status: "success",
-    project,
-    workspace,
-  });
+  response(res, 200, { workspace, projectSave });
 });
 
 /**

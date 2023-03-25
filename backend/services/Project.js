@@ -1,5 +1,4 @@
 import Project from "../models/taskModal.js";
-import asyncHandler from "express-async-handler";
 import {
   deleteCache,
   getOrSetFunction,
