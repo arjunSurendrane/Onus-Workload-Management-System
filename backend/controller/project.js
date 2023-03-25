@@ -23,7 +23,6 @@ const successresponse = async (res, statusCode, data) => {
  * @param {*} res - success message with project data
  */
 export const createProject = catchAsync(async (req, res) => {
-  console.log(req.body);
   const { projectName, workspaceId, departmentID } = req.body;
   const id = req.params.id;
   const project = new Project({

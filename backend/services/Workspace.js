@@ -7,7 +7,6 @@ export const findWorkspace = async () => {
     const data = await getOrSetFunction("workspaces", () => {
       return Workspace.find()
         .populate("Lead")
-        .populate("members.memberId")
         .populate("department.project.projectId");
     });
     return data;
@@ -38,7 +37,7 @@ export const addDepartmentIntoWorkspace = async (id, data) => {
     },
     { new: true, upsert: true }
   );
-  updateCacheMemory(`workspace-${data._id}`, data);
+  updateCacheMemory(`workspace-${res._id}`, res);
   console.log({ res });
   return res;
 };
@@ -67,3 +66,38 @@ export const updateProjectInWorkspace = async (
     { new: true }
   );
 };
+
+export const deleteMemberFromWorkspace = async (id, userId) => {
+  return await Workspace.findByIdAndUpdate(id, {
+    $pull: { members: { _id: userId } },
+  });
+};
+
+export const workspaceMember = async (id) => {
+  const workspace = await Workspace.findById(id);
+  return workspace.members;
+};
+
+export const getWorkspaceusingId = async (id) => {
+  console.log(id);
+  return await Workspace.findById(id);
+};
+
+export const findUserWorkspaces = async (userId) => {
+  return await Workspace.find({ "members.memberId": userId });
+};
+
+/**
+ * Update Plan
+ * @param {String} Lead - Lead user id
+ * @param {String} plan - Plan name
+ * @returns
+ */
+export const updatePlan = async (Lead, plan) => {
+  const data = await Workspace.findOneAndUpdate({ Lead }, { plan });
+  console.log(data);
+};
+
+// export const workload = async(id,userid)=>{
+//   const data = await
+// }

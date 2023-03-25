@@ -1,7 +1,13 @@
 export const globalErrorHandling = (err, req, res, next) => {
   console.log(err);
-  res.status(404).json({
-    status: "fail",
-    error: `${err}`,
-  });
+  if (err.status == "fail") {
+    return res.status(err.statusCode).json({
+      status: "fail",
+      error: `${err}`,
+    });
+  } else {
+    return res.status(500).json({
+      status: "error",
+    });
+  }
 };

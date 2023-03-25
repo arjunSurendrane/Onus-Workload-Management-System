@@ -15,6 +15,10 @@ const taskSchema = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
     ref: "Project",
   },
+  workspaceId: {
+    type: mongoose.Types.ObjectId,
+    ref: "Workspace",
+  },
   priority: { type: Boolean, default: false },
   createdDate: Date,
   status: {
@@ -39,6 +43,7 @@ const taskSchema = new mongoose.Schema({
     },
   ],
   attachedfiles: [{ link: String }],
+  submitfile: String,
 });
 
 taskSchema.pre(/^save/, function (next) {

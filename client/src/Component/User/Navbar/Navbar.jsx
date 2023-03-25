@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   AiOutlineClose,
   AiOutlineMenu,
@@ -10,13 +10,19 @@ import { GiUpgrade } from "react-icons/gi";
 import { GrFormAdd } from "react-icons/gr";
 import { HiOutlineHome, HiStatusOnline } from "react-icons/hi";
 import { MdWorkspacesOutline } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import businessLogo from "../../../assets/business.png";
+import businessPlusLogo from "../../../assets/businessPlus.png";
 import logo from "../../../assets/toppng.com-teamwork-icon-black-and-white-407x435.png";
 import Sidebar from "../Sidebar/Sidebar";
 
 export default function Navbar({ heading, secHeading, thirdHeading, active }) {
   const [nav, setNav] = React.useState(false);
+  const [plan, setPlan] = useState(localStorage.getItem("plan"));
   const history = useNavigate();
+  const { id } = useParams();
+
+  console.log(plan);
 
   const handleNav = () => {
     setNav((preNav) => !preNav);
@@ -43,7 +49,7 @@ export default function Navbar({ heading, secHeading, thirdHeading, active }) {
                   ? "p-4 cursor-pointer font-medium bg-gradient-to-r from-[#75337d]  to-[#7b68ee] inline-block text-transparent bg-clip-text"
                   : "p-4 cursor-pointer font-medium"
               }
-              onClick={() => history("/department/list")}
+              onClick={() => history(`/${id}/dashboard`)}
             >
               <p
                 className={
@@ -62,7 +68,7 @@ export default function Navbar({ heading, secHeading, thirdHeading, active }) {
                   ? "p-4 cursor-pointer font-medium bg-gradient-to-r from-[#75337d]  to-[#7b68ee] inline-block text-transparent bg-clip-text"
                   : "p-4 cursor-pointer font-medium"
               }
-              onClick={() => history("/department/board")}
+              onClick={() => history(`/${id}/workload/table`)}
             >
               <p
                 className={
@@ -92,6 +98,40 @@ export default function Navbar({ heading, secHeading, thirdHeading, active }) {
                 {thirdHeading}
               </p>
             </li>
+            {plan != "free" ? (
+              <li
+                className={
+                  active === "h"
+                    ? "p-4 cursor-pointer font-medium bg-gradient-to-r from-[#75337d]  to-[#7b68ee] inline-block text-transparent bg-clip-text"
+                    : "p-4 cursor-pointer font-medium"
+                }
+              >
+                <p
+                  className={
+                    plan != "Business"
+                      ? "md:text-lg sm:text-sm text-xs border-b-4 border-[#7b68ee] "
+                      : "md:text-lg sm:text-sm text-xs "
+                  }
+                >
+                  <div className="w-6 h-6 grid place-content-center">
+                    <span
+                      data-te-toggle="tooltip"
+                      title={`${plan} Member`}
+                      className="transititext-primary text-primary transition duration-100 ease-in-out hover:text-primary-400 focus:text-primary-600 active:text-primary-700 dark:text-primary-400 dark:hover:text-primary-500 dark:focus:text-primary-500 dark:active:text-primary-600"
+                    >
+                      {" "}
+                      {plan == "Business" ? (
+                        <img src={businessLogo} alt="" />
+                      ) : (
+                        <img src={businessPlusLogo} alt="" />
+                      )}
+                    </span>
+                  </div>
+                </p>
+              </li>
+            ) : (
+              ""
+            )}
           </ul>
         </div>
 

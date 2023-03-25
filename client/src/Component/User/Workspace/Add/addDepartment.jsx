@@ -3,7 +3,7 @@ import { Box } from "@mui/system";
 import axios from "../../../../api/index";
 import React, { useEffect } from "react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { userAuthorization } from "../../../../api/apis";
 
@@ -18,9 +18,7 @@ export default function AddDepartment({
   const [data, setData] = useState("");
   const [error, setError] = useState("");
   const [cookies, setCookies] = useCookies();
-  const [workspace, setWorkspace] = useState(
-    JSON.parse(localStorage.getItem("Workspace"))
-  );
+  const { id } = useParams();
   const history = useNavigate();
   useEffect(() => {
     return () => {
@@ -32,13 +30,12 @@ export default function AddDepartment({
     e.preventDefault();
     if (nextLink == "department") {
       const res = await axios.patch(
-        `/workspace/department/${workspace.workspace._id}`,
+        `/workspace/department/${id}`,
         { name: data },
         { headers: { authorization: `Bearer ${cookies.userJwt}` } }
       );
       if (res.data.status == "success") {
         console.log({ ...res.data.workspace });
-        await userAuthorization(cookies.userJwt);
         return close();
       }
       setError("Something gone wrong");
@@ -49,7 +46,7 @@ export default function AddDepartment({
       const res = await axios.post(
         "/workspace/project",
         {
-          workspaceId: workspace.workspace._id,
+          workspaceId: id,
           projectName: data,
           departmentID,
         },
@@ -58,7 +55,6 @@ export default function AddDepartment({
         }
       );
       if (res.data.status == "success") {
-        await userAuthorization(cookies.userJwt);
         return close();
       }
       setError("Something gone wrong");

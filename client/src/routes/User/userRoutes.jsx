@@ -25,6 +25,10 @@ import UserOutlet from "./userOutlet";
 import ErrorPage from "../../Pages/User/PageNotFound/errorPage.jsx";
 import AddTask from "../../Component/User/Task/addTask";
 import WorkspaceSettingsPage from "../../Pages/User/Workspace/SettingsPage/settings";
+import DashboardPage from "../../Pages/User/dashboard/dashboard";
+import InvitationPage from "../../Pages/User/Invite/invitationPage";
+import MembersTable from "../../Pages/User/dashboard/membersTable";
+import PageNotFound from "../../Component/Error/pageNotFound";
 
 export default function UserRoutes() {
   return (
@@ -33,13 +37,14 @@ export default function UserRoutes() {
       <Routes>
         <Route path="home" element={<Home />} />
         <Route path="notification" element={<Notification />} />
+        <Route path="invite/member" element={<InvitationPage />} />
         <Route path="online" element={<Online />} />
         <Route path="chat" element={<Chat />} />
-        <Route path="department/list" element={<DepartmentList />} />
+        <Route path="department/list/:projectId" element={<DepartmentList />} />
         <Route path="department/board" element={<TaskBoard />} />
         <Route path="task" element={<TaskView />} />
         <Route path="leaderboard" element={<LeaderBoard />} />
-        <Route path="profile" element={<Profile />} />
+        <Route path="profile/:userId" element={<Profile />} />
         <Route path="subscribe" element={<Subscribe />} />
 
         <Route
@@ -47,8 +52,11 @@ export default function UserRoutes() {
           element={<WorkspaceSettingsPage />}
         />
         <Route path="addDepartment" element={<AddDepartmentPage />} />
+        <Route path="workload/table" element={<MembersTable />} />
+        <Route path="dashboard" element={<DashboardPage />} />
         <Route path="addProject" element={<AddProjectPage />} />
-        <Route path="addTask" element={<AddTask />} />
+        <Route path="addTask/:projectId" element={<AddTask />} />
+        <Route path="/*" element={<PageNotFound />} />
       </Routes>
     </div>
   );

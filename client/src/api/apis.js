@@ -48,9 +48,13 @@ export const addTask = async ({ cookie, data }) => {
     formData.append("description", data.Description);
     formData.append("dueDate", data.dueDate);
     formData.append("attachedFile", data.file[0]);
-    const res = await axios.post("/workspace/task", formData, {
-      headers: { authorization: `Bearer ${cookie}` },
-    });
+    const res = await axios.post(
+      `/workspace/${data.workspaceId}/task`,
+      formData,
+      {
+        headers: { authorization: `Bearer ${cookie}` },
+      }
+    );
     return res;
   } catch (error) {
     return error;
@@ -70,10 +74,10 @@ export const fetchTaskData = async ({ id, cookie }) => {
   }
 };
 
-export const changeStatus = async (id, status, cookie) => {
+export const changeStatus = async (id, status, workspaceId, cookie) => {
   const res = await axios.patch(
     `/workspace/task/status/${id}`,
-    { status },
+    { status, workspaceId },
     { headers: { authorization: `Bearer ${cookie}` } }
   );
   if (res.data.status == "success") {
@@ -81,8 +85,8 @@ export const changeStatus = async (id, status, cookie) => {
   }
 };
 
-export const deleteTask = async (id, cookie) => {
-  const res = await axios.delete(`/workspace/task/${id}`, {
+export const deleteTask = async (id, workspaceId, cookie) => {
+  const res = await axios.delete(`/workspace/${workspaceId}/task/${id}`, {
     headers: { authorization: `Bearer ${cookie}` },
   });
   if (res.status == 204) {
@@ -90,10 +94,10 @@ export const deleteTask = async (id, cookie) => {
   }
 };
 
-export const changeTaskPrioriy = async (id, priority, cookie) => {
+export const changeTaskPrioriy = async (id, priority, workspaceId, cookie) => {
   const res = await axios.patch(
     `/workspace/task/priority/${id}`,
-    { priority },
+    { priority, workspaceId },
     { headers: { authorization: `Bearer ${cookie}` } }
   );
   if (res.data.status == "success") {

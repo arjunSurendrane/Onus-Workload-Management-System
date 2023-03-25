@@ -3,7 +3,7 @@ import axios from "./index";
 export const urls = {
   addMember: "/workspace/member/",
   createWorkspace: "/workspace",
-  createTask: "/workspace/task",
+  createTask: "/workspace/:workspaceId/task",
   createProject: "/workspace/project",
   sendInvitation: "/workspace/invitation/",
   addDepartment: "/workspace/department/",
@@ -11,7 +11,7 @@ export const urls = {
   changePriority: "/workspace/task/priority/",
   taskUpdate: "/workspace/task/:id",
   assignTask: "/workspace/task/assign",
-  deleteTask: "/workspace/task/",
+  deleteTask: "/workspace/:workspaceId/task/:id",
   workspace: "/workspace",
   groupAllTasks: "/workspace/tasks/:id/list",
   getOneTask: "/workspace/task/:id",
@@ -19,6 +19,22 @@ export const urls = {
   addSubTask: "/workspace/task/subtask/:id",
   deleteSubtask: "/workspace/task/:id/:subtaskId",
   submitTaskFile: "/workspace/task/submit/:id",
+  deleteMember: "/workspace/member/:id/:subtaskId",
+  workspaceMembers: "/workspace/member/:id",
+  getWorkspace: "/workspace/:id",
+  getUserWorkload: "/user/workload/:id",
+  findMembers: "/workspace/members/:id",
+  getUser: "/user/:id",
+  findUserActivity: "/user/:id/activity",
+  getAssignedTask: "/user/:id/task/:workspaceId",
+  updateDescription: "/user/:id/description",
+  findUserWorkspaces: "/user/member/:id/workspace",
+  fetchNotification: "/user/:id/notification",
+  fetchWorkspaceWorkload: "/workspace/:id/workload",
+  fetchUserWorkload: "/workspace/:workspaceId/members/:id/workload",
+  updateRole: "workspace/:workspaceId/member/:id/role",
+  getAllUsersForAdmin: "/admin/getAllUser",
+  blockUser: "/admin/blockuser",
 };
 
 export const sendRequest = async ({
@@ -27,10 +43,12 @@ export const sendRequest = async ({
   data = null,
   cookies: token,
   subtaskId = null,
+  workspaceId,
   operation,
 }) => {
   let url = urls[link];
   if (id) url = url.replace(":id", id);
+  if (workspaceId) url = url.replace(":workspaceId", workspaceId);
   if (operation == "get") {
     const res = await axios.get(url, {
       headers: { authorization: `Bearer ${token}` },

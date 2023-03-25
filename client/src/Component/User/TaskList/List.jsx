@@ -3,7 +3,7 @@ import { AiOutlineUserAdd } from "react-icons/ai";
 import { CgFlagAlt } from "react-icons/cg";
 import { RiFlag2Fill } from "react-icons/ri";
 import { BiMessageDetail } from "react-icons/bi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import addTaskImage from "../../../assets/undraw_add_files_re_v09g.svg";
 import Task from "../Task/Task";
 import AddTask from "../Task/addTask";
@@ -21,6 +21,8 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import toast, { Toaster } from "react-hot-toast";
 import UserList from "./userList";
 import { sendRequest } from "../../../api/sampleapi";
+import ServerDown from "../../Error/serverDown";
+import LoadingPage from "../../Error/loading";
 
 export default function List() {
   const history = useNavigate();
@@ -36,8 +38,9 @@ export default function List() {
   const componentReload = () => {
     window.location.reload(false);
   };
-  const productID =
-    useSelector(fetchProductId) || localStorage.getItem("ProjectId");
+  const { id, projectId } = useParams();
+  const workspaceId = id;
+
   /**
    * SWR code for get grouped collecton data
    */
@@ -49,7 +52,7 @@ export default function List() {
   } = useSWR(
     {
       link: "groupAllTasks",
-      id: productID,
+      id: projectId,
       cookies: cookies.userJwt,
       operation: "get",
     },
@@ -60,9 +63,17 @@ export default function List() {
    * Check isloading/error/data
    */
   if (isLoading) {
-    console.log("loading...");
+    return (
+      <>
+        <LoadingPage />
+      </>
+    );
   } else if (error) {
-    console.log("error");
+    return (
+      <>
+        <ServerDown />
+      </>
+    );
     return <div>Error</div>;
   } else {
     const tasks = tasksData?.data?.tasks || [];
@@ -83,7 +94,7 @@ export default function List() {
     };
     const handleDelete = async (id) => {
       console.log("delete button clicked");
-      const res = await deleteTask(id, cookies.userJwt);
+      const res = await deleteTask(id, workspaceId, cookies.userJwt);
       console.log({ res });
       if (res) {
         toast.success("Task deleted");
@@ -92,7 +103,12 @@ export default function List() {
       }
     };
     const updatePriority = async (id, priority) => {
-      const task = await changeTaskPrioriy(id, priority, cookies.userJwt);
+      const task = await changeTaskPrioriy(
+        id,
+        priority,
+        workspaceId,
+        cookies.userJwt
+      );
       if (task.data.status == "success") {
         mutate(tasksData.data);
         toast.success("update priority");
@@ -247,7 +263,7 @@ export default function List() {
                 setShowModal={() => {
                   setShowModal(false);
                   console.log(tasksData);
-                  mutate([...tasksData]);
+                  mutate(tasksData);
                 }}
                 deleteTask={(data) => deleteConfirmationMessage(data)}
                 taskId={task}
@@ -271,7 +287,7 @@ export default function List() {
                 src={addTaskImage}
                 alt="add task"
                 className="w-[200px] h-[200px] transition ease-in-out  hover:-translate-y-1 hover:scale-110 duration-200 mb-0 pb-0 cursor-pointer"
-                onClick={() => navigate("/addTask")}
+                onClick={() => navigate(`/${id}/addTask/${projectId}`)}
               />
             </div>
           </>

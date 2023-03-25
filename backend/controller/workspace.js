@@ -1,18 +1,32 @@
 import Project from "../models/projectModal.js";
 import Workspace from "../models/workSpaceModal.js";
-import { getCacheData, updateCacheMemory } from "../redis/redisFunction.js";
+import {
+  deleteCache,
+  getCacheData,
+  updateCacheMemory,
+} from "../redis/redisFunction.js";
 import { GenerateIvitationMail } from "../services/Nodemailer.js";
 import {
-  addWorkspaceInUser,
-  addWorkspaceInUsercollection,
+  usersWorkload,
+  workspaceWorkloadData,
+  workspaceWorkloadWithAssignedUsers,
+} from "../services/Task.js";
+import {
   findUserWithoutPassword,
+  updateRoleInUser,
+  updateUserDataWithId,
+  userWorkspaces,
 } from "../services/User.js";
 import {
   addDepartmentIntoWorkspace,
-  addMemberIntoWorkspace,
   findWorkspace,
+  getWorkspaceusingId,
+  workspaceMember,
 } from "../services/Workspace.js";
+import AppError from "../utils/appError.js";
 import catchAsync from "../utils/catchAsync.js";
+import { sendNotificationToUser } from "./notification.js";
+import { response } from "./response.js";
 
 /**
  * Success response
@@ -27,6 +41,14 @@ const successresponse = async (res, statusCode, data) => {
   });
 };
 
+export const getWorkspaceWithId = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const workspace = await getWorkspaceusingId(id);
+  console.log(workspace);
+  sendNotificationToUser(workspace._id);
+  response(res, 200, { workspace });
+});
+
 /**
  * Create Workspace
  * POST '/'
@@ -34,7 +56,6 @@ const successresponse = async (res, statusCode, data) => {
  * @param {*} res - send success message with workspace data
  */
 export const createWorkspace = catchAsync(async (req, res, next) => {
-  console.log(req.body);
   const { name, departmentName, projectName } = req.body;
   const project = new Project({
     projectName,
@@ -50,9 +71,11 @@ export const createWorkspace = catchAsync(async (req, res, next) => {
   const [projectDB, workspaceDB, user] = await Promise.all([
     project.save(),
     workspace.save(),
-    addWorkspaceInUsercollection(workspace),
+    updateUserDataWithId(workspace.Lead, {
+      $push: { memberOf: { workspace: workspace._id }, role: "owner" },
+    }),
   ]);
-  successresponse(res, 200, user.memberOf);
+  successresponse(res, 200, workspaceDB);
 });
 
 /**
@@ -62,6 +85,7 @@ export const createWorkspace = catchAsync(async (req, res, next) => {
  * @param {*} res
  */
 export const getWorkspace = catchAsync(async (req, res, next) => {
+  console.log("here");
   const workspace = await findWorkspace();
   successresponse(res, 200, workspace);
 });
@@ -74,10 +98,8 @@ export const getWorkspace = catchAsync(async (req, res, next) => {
  * @param {*} res
  */
 export const addDepartment = catchAsync(async (req, res, next) => {
-  console.log(req.body);
   const departmentName = req.body.name;
   const id = req.params.id;
-  console.log(departmentName, id);
   const workspace = await addDepartmentIntoWorkspace(id, departmentName);
   res.status(200).json({ status: "success", workspace });
 });
@@ -91,14 +113,19 @@ export const addDepartment = catchAsync(async (req, res, next) => {
  */
 export const addMembers = catchAsync(async (req, res, next) => {
   const memberId = req.params.id;
-  const { workspaceId, role } = await getCacheData(`invitation-${memberId}`);
-  console.log({ workspaceId, role });
-  const [user, newWorkSpace] = await Promise.all([
-    addWorkspaceInUser(memberId, workspaceId, role),
-    addMemberIntoWorkspace(workspaceId, memberId, role),
-  ]);
-  console.log(newWorkSpace);
-  successresponse(res, 200, user);
+  const data = await getCacheData(`invitation-${memberId}`);
+  console.log(data);
+  deleteCache(`invitation-${memberId}`);
+  if (data) {
+    const { workspaceId, role } = data;
+    const [user] = await Promise.all([
+      updateUserDataWithId(memberId, {
+        $push: { memberOf: { workspace: workspaceId, role } },
+      }),
+    ]);
+    return successresponse(res, 200, { user });
+  }
+  next("already exist");
 });
 
 /**
@@ -112,13 +139,90 @@ export const sendInvitation = catchAsync(async (req, res, next) => {
   const workspaceId = req.params.id;
   const { memberEmail, role } = req.body;
   const user = await findUserWithoutPassword(memberEmail);
-  if (!user) return errorResponse(res, 410, `user not exist`);
+  if (!user) return next(new AppError(`user not exist`, 410));
   updateCacheMemory(`invitation-${user._id}`, {
     workspaceId,
     memberId: user._id,
     role,
   });
   GenerateIvitationMail(memberEmail, user.name, user._id);
-  console.log(user._id);
   successresponse(res, 200, { email: user.email });
+});
+
+/**
+ * Delete Member
+ * DELETE /workspace/member/:id/:memberId
+ * params have workspace id and member document id
+ */
+export const deleteMember = catchAsync(async (req, res, next) => {
+  const { id, memberId } = req.params;
+  const user = await updateUserDataWithId(memberId, {
+    $pull: { memberOf: { workspace: id } },
+  });
+  response(res, 204, user);
+});
+
+/**
+ * Update Workspace
+ * GET /workspace/member/:id
+ * params have workspace id
+ */
+export const workspaceMembers = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const users = await workspaceMember(id);
+  response(res, 200, { users });
+});
+
+/**
+ * Find Members in Workspace
+ * GET /membres/:id
+ * id => workspace id
+ */
+export const findMembers = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const members = await userWorkspaces(id);
+  console.log({ members });
+  response(res, 200, { members });
+});
+
+/**
+ * Workspace Dashboard
+ */
+export const membersWorkload = catchAsync(async (req, res, next) => {
+  const { id, userId } = req.params;
+  const userbasedWorkload = await usersWorkload(id, userId);
+  res.json({
+    userbasedWorkload,
+  });
+});
+
+/**
+ * Workspace Workload
+ */
+export const workspaceWorkload = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const [workload, usersWorkload] = await Promise.all([
+    workspaceWorkloadData(id),
+    workspaceWorkloadWithAssignedUsers(id),
+  ]);
+  response(res, 200, { workload, usersWorkload });
+});
+
+/**
+ * Find All Workspace Members
+ */
+export const findAllMembers = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const members = await userWorkspaces(id);
+  response(res, 200, { members });
+});
+
+/**
+ * Update Role
+ */
+export const updateRole = catchAsync(async (req, res) => {
+  const { id, userId } = req.params;
+  const { role } = req.body;
+  const update = await updateRoleInUser(userId, id, role);
+  response(res, 200, { update });
 });

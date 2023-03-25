@@ -9,16 +9,8 @@ const workSpaceSchema = new mongoose.Schema({
     type: Date,
     default: Date.now(),
   },
-  members: [
-    {
-      memberId: {
-        type: mongoose.Types.ObjectId,
-        ref: "User",
-        unique: true
-      },
-      role: String
-    },
-  ],
+  plan: String,
+
   Lead: {
     type: mongoose.Types.ObjectId,
     ref: "User",
@@ -38,9 +30,8 @@ const workSpaceSchema = new mongoose.Schema({
   ],
 });
 
-
 workSpaceSchema.pre(/^find/, function (next) {
-  this.populate(["department.project.projectId", "Lead", "members.memberId"]);
+  this.populate(["department.project.projectId", "Lead"]);
   next();
 });
 

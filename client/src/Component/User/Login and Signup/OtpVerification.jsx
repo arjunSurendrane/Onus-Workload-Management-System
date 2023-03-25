@@ -197,7 +197,7 @@ export default function OtpVerification() {
           Resend Otp
         </p>
         <button
-          className="rounded bg-[#6b2f72] w-44 h-10 mt-10 text-white hover:bg-[#58255e]"
+          className="rounded bg-[#6b2f72] w-44 h-10 mt-10 text-white hover:bg-[#58255e] grid place-content-center"
           type="submit"
         >
           {loading ? (

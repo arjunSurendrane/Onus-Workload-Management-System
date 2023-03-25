@@ -7,6 +7,7 @@ import { GenerateMail } from "../services/Nodemailer.js";
 import { findUser, findUserWithEmail } from "../services/User.js";
 import Workspace from "../models/workSpaceModal.js";
 import jwt from "jsonwebtoken";
+import catchAsync from "../utils/catchAsync.js";
 
 // create  and send token
 const successresponse = async (res, statusCode, data) => {
@@ -33,55 +34,39 @@ const errorResponse = async (res, statusCode, error) => {
   });
 };
 
-// user login
-export const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const newUser = await findUserWithEmail(email);
-    console.log(newUser);
-    if (!newUser) return errorResponse(res, 401, "user doesnot exist");
-    const comparePassword = await bcrypt.compare(password, newUser.password);
-    if (!comparePassword) return errorResponse(res, 401, "incorrect password");
-    const workspace = await Workspace.findOne({ Lead: newUser._id });
-    console.log({ workspace });
-    const data = {
-      user: {
-        name: newUser.name,
-        email: newUser.email,
-        _id: newUser._id,
-        plan: newUser.Plan,
-        block: newUser.block,
-        memberOf: newUser.memberOf,
-      },
-      workspace: newUser.memberOf,
+/**
+ * Login controller
+ * POST /user/login
+ * @description - req.body have email and password
+ */
+export const login = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+  const newUser = await findUserWithEmail(email);
+  console.log(newUser);
+  if (!newUser) return errorResponse(res, 401, "user doesnot exist");
+  const comparePassword = await bcrypt.compare(password, newUser.password);
+  if (!comparePassword) return errorResponse(res, 401, "incorrect password");
+  const workspace = await Workspace.findOne({ Lead: newUser._id });
+  console.log({ workspace });
+  const data = {
+    user: {
+      name: newUser.name,
+      email: newUser.email,
       _id: newUser._id,
-    };
-    successresponse(res, 200, data);
-  } catch (err) {
-    errorResponse(res, 401, `error ${err}`);
-  }
-};
+      plan: newUser.Plan,
+      block: newUser.block,
+      memberOf: newUser.memberOf,
+    },
+    workspace: newUser.memberOf,
+    _id: newUser._id,
+  };
+  successresponse(res, 200, data);
+});
 
-// user signup
-export const signup = async (req, res) => {
-  const { email, password, name, mobile } = req.body;
-  const bcryptPassword = await bcrypt.hash(password, 12);
-  const newUser = new User({
-    email,
-    name,
-    password: bcryptPassword,
-    mobile,
-  });
-  try {
-    await newUser.save();
-    successresponse(res, 201, newUser);
-  } catch (error) {
-    errorResponse(res, 404, error);
-  }
-};
-
-// generate otp
-export const sendEmail = async (req, res) => {
+/**
+ * generate otp and send to mail for email verification
+ */
+export const sendEmail = catchAsync(async (req, res) => {
   const { email } = req.body;
   console.log(email);
   const otp = otpGenerator.generate(5, {
@@ -90,27 +75,20 @@ export const sendEmail = async (req, res) => {
     lowerCaseAlphabets: false,
   });
   console.log(otp);
-  try {
-    // const Otps = new Otp({ email, otp })
-    // const user = await User.findOne({ email })
-    const [Otps, user] = await Promise.all([
-      Otp({ email, otp }),
-      User.findOne({ email }),
-    ]);
-    if (user) return errorResponse(res, 406, "already have an account");
-    GenerateMail(email, otp);
-    // successresponse(res, 201, { email })
-    res.status(200).json({
-      status: "success",
-    });
-    Otps.save();
-  } catch (error) {
-    errorResponse(res, 404, error);
-  }
-};
+  const [Otps, user] = await Promise.all([
+    Otp({ email, otp }),
+    User.findOne({ email }),
+  ]);
+  if (user) return errorResponse(res, 406, "already have an account");
+  GenerateMail(email, otp);
+  res.status(200).json({
+    status: "success",
+  });
+  Otps.save();
+});
 
 // email otp verification
-export const emailVerifiction = async (req, res) => {
+export const otpVerification = async (req, res) => {
   try {
     const { email, otp, name, password } = req.body;
     const bcryptPassword = await bcrypt.hash(password, 12);

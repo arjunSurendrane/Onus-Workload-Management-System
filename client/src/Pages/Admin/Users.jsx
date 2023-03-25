@@ -17,27 +17,6 @@ export default function UserManagement() {
   const [cookie, setCookie] = useCookies();
   const [block, setBlock] = useState(false);
 
-  // useEffect
-  useEffect(() => {
-    const res = dispatch(fetchUser(cookie.adminJwt));
-    console.log({ res });
-  }, [block]);
-
-  // blockUser function
-  const blockUser = async (email, value) => {
-    const res = await axios.post(
-      "/admin/blockuser",
-      { email, value },
-      {
-        headers: {
-          authorization: `Bearer ${cookie.adminJwt}`,
-        },
-      }
-    );
-    setBlock((block) => !block);
-    console.log({ block, res });
-  };
-
   // return
   return (
     <div>

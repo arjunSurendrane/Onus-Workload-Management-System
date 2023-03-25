@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { BiRightArrow } from "react-icons/bi";
 import { AiOutlineUserAdd, AiOutlineCloudUpload } from "react-icons/ai";
 import { CgFlagAlt } from "react-icons/cg";
@@ -9,6 +9,7 @@ import { CiEdit } from "react-icons/ci";
 import { Avatar } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { Document, Page } from "react-pdf";
+import moment from "moment";
 import useSWR from "swr";
 import { useCookies } from "react-cookie";
 import {
@@ -23,6 +24,10 @@ import { sendRequest } from "../../../api/sampleapi";
 import UserList from "../TaskList/userList";
 import AddSubtask from "./addSubtask";
 import AddTask from "./addTask";
+import { SocketContext } from "../../../App";
+import { useParams } from "react-router-dom";
+import ServerDown from "../../Error/serverDown";
+import LoadingPage from "../../Error/loading";
 
 export default function Task({ setShowModal, taskId, deleteTask }) {
   const { register, handleSubmit } = useForm();
@@ -31,7 +36,29 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
   const [showUsers, setShowUsers] = useState(false);
   const [subtask, setSubTask] = useState(false);
   const [editTask, setEditTask] = useState(false);
-  useEffect(() => {}, [attachment]);
+  const [comments, setComments] = useState([]);
+  const [commentMessage, setCommentMessage] = useState();
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("User")));
+  const [role, setRole] = useState(localStorage.getItem("role") != "Member");
+  const socket = useContext(SocketContext);
+  socket.on("connect_error", (err) => {
+    console.log(`connect_error due to ${err.message}`);
+  });
+  const { id: workspaceId } = useParams();
+  useEffect(() => {
+    setUser(JSON.parse(localStorage.getItem("User")));
+    socket.emit("joinRoom", taskId);
+    socket.on("data", (data) => {
+      console.log({ comments: data });
+      if (data?.comments) {
+        setComments(data?.comments);
+      }
+    });
+    socket.on("newComment", (data) => {
+      console.log({ newComment: data.comments });
+      setComments(data.comments);
+    });
+  }, []);
 
   /**
    * fetch task data with the help of swr
@@ -55,13 +82,21 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
    * check response status
    */
   if (isLoading) {
-    console.log("loading....");
+    return (
+      <>
+        <LoadingPage />
+      </>
+    );
   } else if (error) {
-    console.log(error);
+    return (
+      <>
+        <ServerDown />
+      </>
+    );
     return <div>Error...!</div>;
   } else {
     console.log({ taskDataINTaskPage: task });
-    let taskData = task.data.task || {};
+    let taskData = task?.data?.task || {};
     const onSubmit = async (data) => {
       const file = data.target.files[0];
       console.log({ file: [file] });
@@ -78,31 +113,53 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
       console.log({ responseFromSubmit: res });
       if (res.data.status == "success") {
         toast.success("submit file");
+        mutate(task);
       } else {
         toast.error("Something gone wrong");
       }
     };
     const updatePriority = async (id, priority) => {
-      const task = await changeTaskPrioriy(id, priority, cookies.userJwt);
-      if (task.data.status == "success") {
+      const res = await changeTaskPrioriy(
+        id,
+        priority,
+        workspaceId,
+        cookies.userJwt
+      );
+      if (res.data.status == "success") {
         toast.success("update priority");
-        // mutate({ ...task });
+        mutate(task);
       }
     };
     const handleChangeStatus = async (id, statusData) => {
       const status =
-        statusData == "ToDo"
+        statusData == "Repeat"
+          ? "ToDo"
+          : statusData == "ToDo"
           ? "InProgress"
           : statusData == "InProgress"
           ? "Completed"
           : null;
       if (status != null) {
-        const res = await changeStatus(id, status, cookies.userJwt);
+        const res = await changeStatus(
+          id,
+          status,
+          workspaceId,
+          cookies.userJwt
+        );
         if (res) {
           toast.success("Change Task Status");
-          mutate(task.data.task);
+          mutate(task);
         }
       }
+    };
+    const sendComment = async () => {
+      socket.emit("createComment", {
+        id: taskData._id,
+        message: commentMessage,
+        userName: user.name,
+        userId: user._id,
+      });
+      setCommentMessage("");
     };
     const handleDeleteSubtask = async (id, subtaskId) => {
       const res = await sendRequest({
@@ -123,7 +180,7 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
       <div>
         <div>
           <Toaster />
-          <div className="flex justify-center items-center overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none bg-black bg-opacity-60 focus:outline-none">
+          <div className="flex justify-center items-center overflow-x-hidden  fixed inset-0 z-50 outline-none bg-black bg-opacity-60 focus:outline-none">
             <div className="relative mx-auto max-w-[90%] min-w-[90%]  ">
               <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
                 <div className="flex items-center  justify-between p-2 border-b border-solid border-gray-300 rounded-t ">
@@ -151,7 +208,7 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                                 : taskData?.status == "InProgress"
                                 ? "bg-[#a875ff]"
                                 : "bg-green-500"
-                            } bg-gray-400 rounded-l`}
+                            }  rounded-l`}
                           >
                             <p className="text-xs text-white">
                               {taskData?.status}
@@ -172,11 +229,27 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                                 taskData?._id,
                                 taskData?.status
                               );
-                              console.log("clicked");
                             }}
                           >
                             {">"}
                           </div>
+
+                          {role && taskData?.status == "Completed" ? (
+                            <div>
+                              <button
+                                className="w-14 h-8 rounded-r mx-1 text-center text-white cursor-default bg-red-200 hover:bg-red-500"
+                                onClick={() => {
+                                  handleChangeStatus(taskData?._id, "Repeat");
+                                }}
+                              >
+                                <p className="text-sm font-medium text-white">
+                                  Repeat
+                                </p>
+                              </button>
+                            </div>
+                          ) : (
+                            ""
+                          )}
                         </div>
                         <div
                           className="py-2 "
@@ -270,7 +343,6 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                       </div>
                       <div className="text-center">
                         <p className="text-[10px]  font-medium text-gray-500">
-                          {/* {taskData?.dueDate.split("T")[0]} */}
                           {taskData?.dueDate.split("T")[0]}
                         </p>
                       </div>
@@ -278,7 +350,7 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                   </div>
                 </div>
 
-                <div className="flex justify-between px-10  max-h-[600px] overflow-y-scroll overflow-x-clip">
+                <div className="flex justify-between px-10  max-h-[600px]  overflow-x-clip">
                   <div className="w-[50%] border-r-2 px-3">
                     <h1 className="text-2xl capitalize">
                       {taskData?.taskName}
@@ -315,7 +387,9 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                                   </div>
 
                                   <p className="text-base font-medium text-gray-700 capitalize">
-                                    {data?.name}
+                                    {user?.name == data?.name
+                                      ? "Me"
+                                      : data.name}
                                   </p>
                                 </div>
 
@@ -394,21 +468,27 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                       )}
                     </div>
                   </div>
-                  <div className="w-[50%] px-5 py-5 bg-[#fbfbfb]">
-                    <div className="flex justify-between">
-                      <div className="w-[10%]">
-                        <Avatar>H</Avatar>
-                      </div>
-                      <div className="w-[90%] shadow-lg  border rounded-b-lg rounded-r-lg  px-5 py-2">
-                        <div className="flex justify-between">
-                          <div>username</div>
-                          <div>time</div>
+                  <div className="w-[50%] px-5 py-5 bg-[#fbfbfb] overflow-scroll">
+                    {comments.map((data) => (
+                      <div className="flex justify-between mt-3">
+                        <div className="w-[10%]">
+                          <Avatar className="capitalize">
+                            {data?.name?.split("")[0]}
+                          </Avatar>
                         </div>
-                        <div>
-                          <p className="text-sm">comment</p>
+                        <div className="w-[90%] shadow-lg  border rounded-b-lg rounded-r-lg  px-5 py-2">
+                          <div className="flex justify-between">
+                            <div>{data?.name}</div>
+                            <div className="text-xs font-bold text-gray-500">
+                              {moment().endOf(data.time).fromNow()}
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-sm">{data.message}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
                 <div className="flex py-5 border-t-2">
@@ -434,15 +514,17 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                     </label>
                   </div>
                   <div className="w-[50%] px-5 flex justify-between">
-                    <div>
+                    <div className="w-full">
                       <input
                         type="text"
                         name="attachments"
+                        value={commentMessage}
+                        onChange={(e) => setCommentMessage(e.target.value)}
                         placeholder="write comment"
-                        className="focus:border-none hover:border-none"
+                        className="focus:border-none hover:border-none focus:outline-none w-[100%]"
                       />
                     </div>
-                    <div>
+                    <div onClick={() => sendComment()}>
                       <TbSend size={20} color={"gray"} />
                     </div>
                   </div>

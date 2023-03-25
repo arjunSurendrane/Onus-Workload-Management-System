@@ -6,7 +6,7 @@ import { addTask } from "../../../api/apis";
 import { useCookies } from "react-cookie";
 import { useSelector } from "react-redux";
 import { fetchProductId } from "../../../features/users/Project";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { mutate } from "swr";
 import toast, { Toaster } from "react-hot-toast";
 import { Box } from "@mui/system";
@@ -14,10 +14,9 @@ import { CircularProgress } from "@mui/material";
 
 export default function AddTask() {
   const [cookies, setCookies] = useCookies();
-  const projectId = useSelector(fetchProductId);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
+  const { id, projectId } = useParams();
   const schema = yup.object().shape({
     taskName: yup.string().required("Must enter task name"),
     createdAt: yup.date().default(() => new Date()),
@@ -37,12 +36,12 @@ export default function AddTask() {
     setLoading(true);
     const res = await addTask({
       cookie: cookies.userJwt,
-      data: { ...data, projectId },
+      data: { ...data, projectId, workspaceId: id },
     });
     console.log({ task: res });
     if (res.data.status == "success") {
       setLoading(false);
-      navigate("/department/list");
+      navigate(`/${id}/department/list/${projectId}`);
     }
   };
   return (
@@ -55,7 +54,7 @@ export default function AddTask() {
               <h1 className="font-bold text-lg">Create Task</h1>
               <button
                 className="bg-transparent border-0 text-black float-right"
-                onClick={() => navigate("/department/list")}
+                onClick={() => navigate(`/${id}/department/list/${projectId}`)}
               >
                 x
               </button>

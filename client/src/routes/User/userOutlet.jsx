@@ -3,10 +3,11 @@ import { useCookies } from "react-cookie";
 import { useEffect } from "react";
 
 function UserOutlet() {
-  const data = localStorage.getItem("User");
-  if (data) {
+  const [cookies, setCookies] = useCookies();
+  if (cookies.userJwt) {
     return <Outlet />;
   }
+  localStorage.clear();
   return <Navigate to="/" />;
 }
 

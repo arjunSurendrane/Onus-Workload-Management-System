@@ -1,16 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
+import PaymentModal from "./paymentModal";
 
 export default function UpgradePage() {
+  const [showModal, setShowModal] = useState(false);
+  const [data, setData] = useState();
   return (
     <div className="md:mx-14 mx-5 mt-10  md:w-[70vw] w-[87vw]  flex justify-between px-2  text-center rounded">
-      <div className="w-full">
+      <div className="w-full ">
         <div className="w-full">
           <h1 className="w-full text-3xl font-bold text-[#75337d] my-2">
             Pricing
           </h1>
         </div>
-        <div className="grid grid-cols-3 gap-4 my-10">
-          <div className="p-5">
+        <div className="grid grid-cols-2 gap-4 my-10 ">
+          {/* <div className="p-5 hover:-translate-y-1 hover:scale-125 transition ease-in-out delay-150 duration-300 ">
             <div className=" bg-gray-100 mx-auto   shadow-2xl py-10 border-y-[#00b884]">
               <p className="uppercase font-bold text-[#00b884] py-1">
                 free forever
@@ -21,7 +24,7 @@ export default function UpgradePage() {
                 Forever
               </p>
               <button
-                className="  mt-2 rounded-md bg-[#00b884] text-white w-[150px] h-[40px] "
+                className="  mt-2 rounded-md bg-[#00b884] text-white w-[150px] h-[40px] hover:bg-[#2a6b58] focus:border-2 "
                 onClick={() => {
                   props.page == "landing"
                     ? history("/signup")
@@ -37,9 +40,9 @@ export default function UpgradePage() {
               <p className="py-1 text-md">In app video recording</p>
               <p className="py-1 text-md">24/7 support</p>
             </div>
-          </div>
-          <div className="p-5">
-            <div className=" bg-gray-100  mx-auto shadow-2xl  py-10">
+          </div> */}
+          <div className="p-5   ">
+            <div className=" bg-gray-100 hover:bg-[#f6fdff] transition ease-in-out delay-150 duration-300 mx-auto shadow-2xl  py-10">
               <p className="uppercase font-bold text-[#49ccf9] py-1">
                 Business
               </p>
@@ -49,25 +52,24 @@ export default function UpgradePage() {
                 Per member per month
               </p>
               <button
-                className="  mt-2 rounded-md bg-[#49ccf9] text-white w-[150px] h-[40px]"
+                className="  mt-2 rounded-md bg-[#49ccf9] text-white w-[150px] h-[40px] hover:bg-[#246980] focus:border-2 "
                 onClick={() => {
-                  props.page == "landing"
-                    ? history("/signup")
-                    : history("/home");
+                  setData({ plan: "Business", amount: 499 });
+                  setShowModal(true);
                 }}
               >
                 Get Started
               </button>
-              <p className="py-1 mt-5 text-md">100 tasks</p>
-              <p className="py-1 text-md">Add 20 memebers into workspace</p>
-              <p className="py-1 text-md">Two-Factor Authentication</p>
+              <p className="py-1 mt-5 text-md">50 tasks</p>
+              <p className="py-1 text-md">Add 10 memebers into workspace</p>
+              <p className="py-1 text-md">Create 10 departments</p>
               <p className="py-1 text-md">Real time chat</p>
-              <p className="py-1 text-md">In app video recording</p>
+              {/* <p className="py-1 text-md">In app video recording</p> */}
               <p className="py-1 text-md">24/7 support</p>
             </div>
           </div>
-          <div className="p-5">
-            <div className=" bg-gray-100  mx-auto shadow-2xl py-10">
+          <div className="p-5 ">
+            <div className=" bg-gray-100  hover:bg-[#f6fdff] transition ease-in-out delay-150 duration-300  mx-auto shadow-2xl py-10">
               <p className="uppercase font-bold text-[#7b68ee] py-1">
                 Business Plus
               </p>
@@ -77,11 +79,10 @@ export default function UpgradePage() {
                 per member per month
               </p>
               <button
-                className="  mt-2 rounded-md bg-[#7b68ee] text-white w-[150px] h-[40px]"
+                className="  mt-2 rounded-md bg-[#7b68ee] text-white w-[150px] h-[40px] hover:bg-[#50439a] focus:border-2 "
                 onClick={() => {
-                  props.page == "landing"
-                    ? history("/signup")
-                    : history("/home");
+                  setData({ plan: "Business Plus", amount: 699 });
+                  setShowModal(true);
                 }}
               >
                 Get Started
@@ -90,14 +91,17 @@ export default function UpgradePage() {
               <p className="py-1 text-md">
                 Add unlimited memebers into workspace
               </p>
-              <p className="py-1 text-md">Two-Factor Authentication</p>
+              <p className="py-1 text-md">Create unlimited departments</p>
               <p className="py-1 text-md">Real time chat</p>
-              <p className="py-1 text-md">In app video recording</p>
+              {/* <p className="py-1 text-md">In app video recording</p> */}
               <p className="py-1 text-md">24/7 support</p>
             </div>
           </div>
         </div>
       </div>
+      {showModal && (
+        <PaymentModal close={() => setShowModal(false)} reqBody={data} />
+      )}
     </div>
   );
 }

@@ -58,6 +58,7 @@ export const GenerateMail = (email, otp) => {
  */
 export const GenerateIvitationMail = (email, name, id) => {
   let mailTransporter = Configure();
+  console.log({ email });
   let details = {
     from: `${process.env.EMAIL}`,
     to: `${email}`,

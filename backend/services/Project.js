@@ -5,6 +5,7 @@ import {
   getOrSetFunction,
   updateCacheMemory,
 } from "../redis/redisFunction.js";
+import mongoose from "mongoose";
 
 /**
  * All Projects
@@ -65,6 +66,7 @@ export const updateProjectWithTaskData = async (projectId, newTask) => {
     },
     { new: true }
   );
+  console.log({ data, projectId });
   deleteCache(`groupedTask-${projectId}`);
   updateCacheMemory(`project-${projectId}`, data);
   return data;

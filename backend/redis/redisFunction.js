@@ -30,6 +30,11 @@ export async function deleteCache(key) {
   return del;
 }
 
+/**
+ * Get Cache Data
+ * @param {String} key - payment order key
+ * @returns {object} - payment order data from redis
+ */
 export async function getCacheData(key) {
   const redisClient = await connectToRedis();
   const data = await redisClient.get(key);

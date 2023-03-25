@@ -1,12 +1,10 @@
 /**
- * Connect to Port
- * @param {Function} app - express()
+ * Connect to localhost
+ * @param {Object} httpServer - http.createServer(app)
  */
-const connecToPort = (app) => {
-  // connected to localhost
-  app.listen(4000, () => {
-    console.log("server connencted to localhost : 4000");
+const connecToPort = (httpServer) => {
+  httpServer.listen(4000, () => {
+    console.log("connected to 4000");
   });
 };
-
 export default connecToPort;

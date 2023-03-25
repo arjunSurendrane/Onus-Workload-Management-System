@@ -1,186 +1,270 @@
-import React, { useEffect, useState } from "react";
-import { HiOutlineHome, HiStatusOnline } from "react-icons/hi";
-import { AiOutlineNotification, AiFillSetting } from "react-icons/ai";
+import React, { useContext, useState } from "react";
+import { HiOutlineHome } from "react-icons/hi";
+import { AiFillCaretDown, AiOutlineNotification } from "react-icons/ai";
 import { FiLogOut } from "react-icons/fi";
 import { BiChat } from "react-icons/bi";
-import { IoSettingsOutline } from "react-icons/io5";
-import { MdWorkspacesOutline } from "react-icons/md";
 import { GrFormAdd } from "react-icons/gr";
 import { CgMoveTask } from "react-icons/cg";
 import { GiUpgrade } from "react-icons/gi";
 import { ImProfile } from "react-icons/im";
-import { MdSpaceDashboard, MdLeaderboard } from "react-icons/md";
-import AssignmentIcon from "@mui/icons-material/Assignment";
-
 import { useCookies } from "react-cookie";
-import CreateWorkspace from "../../workSpaceForm";
-import { useNavigate } from "react-router-dom";
-import { Avatar, Menu } from "@mui/material";
-import { Option, Select } from "@material-tailwind/react";
+import { useNavigate, useParams } from "react-router-dom";
 import AddDepartment from "../Workspace/Add/addDepartment";
-import { useDispatch } from "react-redux";
-import { createProjectId, addMembers } from "../../../features/users/Project";
-import { userAuthorization } from "../../../api/apis";
 import { FcVideoProjector } from "react-icons/fc";
+import useSWR from "swr";
+import { sendRequest } from "../../../api/sampleapi";
+import { SocketContext } from "../../../App";
+import { Popover } from "@mui/material";
+import { MdLeaderboard } from "react-icons/md";
+import ServerDown from "../../Error/serverDown";
+import LoadingPage from "../../Error/loading";
 
 export default function TrialSidebar() {
-  function Icon({ id, open }) {
-    return (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className={`${
-          id === open ? "rotate-180" : ""
-        } h-5 w-5 transition-transform`}
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2}
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-      </svg>
-    );
-  }
   const [cookies, setCookies, removeCookies] = useCookies();
-  const [open, setOpen] = useState(0);
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("User")));
-  const dispatch = useDispatch();
-  const [showList, setShowList] = useState(false);
   const [showTask, setShowTask] = useState("-1");
   const [addDepartment, setAddDepartment] = useState(false);
   const [addProject, setAddProject] = useState(false);
   const [departmentID, setDepartmentID] = useState("");
-  const [roleMember, setRoleMember] = useState(false);
-  const [workspace, setWorkspace] = useState(user.memberOf[0]);
-  useEffect(() => {
-    const workspaceData = JSON.parse(localStorage.getItem("Workspace"));
-    console.log({ useEffectData: workspaceData });
-    if (workspaceData) {
-      dispatch(addMembers(workspaceData.workspace.members));
-      const data = user.memberOf.filter((el) => el._id == workspaceData._id);
-      console.log({ workspaceData: data });
-      setWorkspace(data[0]);
-    }
-    workspace.role == "Member" ? setRoleMember(true) : setRoleMember(false);
-    localStorage.setItem("Workspace", JSON.stringify({ ...workspace }));
-  }, [user]);
-
-  console.log({ workspace: workspace });
+  const [role, setRole] = useState(localStorage.getItem("role") == "Admin");
+  const { id } = useParams();
+  const [workspaceId, setWorkspaceId] = useState(id);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [notificationCount, setNotificationCount] = useState(false);
 
   const history = useNavigate();
-  const handleOpen = (value) => {
-    setOpen(open === value ? 0 : value);
+  const socket = useContext(SocketContext);
+
+  socket.on("notifications", (data) => {
+    setNotificationCount(true);
+  });
+
+  const plan = (val) => {
+    localStorage.setItem("plan", val);
   };
-  const handleChange = (id) => {
-    dispatch(createProjectId(id));
-    const data = JSON.parse(localStorage.getItem("Workspace"));
-    dispatch(addMembers(data.workspace.members));
-    history("/department/list");
-  };
-  const handleChangeWorkspace = (key) => {
-    setWorkspace(user.memberOf[key]);
-    localStorage.setItem(
-      "Workspace",
-      JSON.stringify({ ...user.memberOf[key] })
+
+  /**
+   * SWR code for get grouped collecton data
+   */
+  const {
+    isLoading,
+    error,
+    data: workspaceData,
+    mutate,
+  } = useSWR(
+    {
+      link: "getWorkspace",
+      id: workspaceId,
+      cookies: cookies.userJwt,
+      operation: "get",
+    },
+    sendRequest
+  );
+  const {
+    isLoading: userWorkspaceLoading,
+    error: userWorkspaceError,
+    data: userWorkspaceList,
+    mutate: userWorkspaceMutate,
+  } = useSWR(
+    {
+      link: "findUserWorkspaces",
+      id: user._id,
+      cookies: cookies.userJwt,
+      operation: "get",
+    },
+    sendRequest
+  );
+
+  const {
+    isLoading: userDataLoading,
+    error: userDataError,
+    data: userData,
+    mutate: userDataMutate,
+  } = useSWR(
+    {
+      link: "getUser",
+      id: user._id,
+      cookies: cookies.userJwt,
+      operation: "get",
+    },
+    sendRequest
+  );
+
+  if (isLoading || userDataLoading) {
+    return (
+      <>
+        <LoadingPage />
+      </>
     );
-    console.log(user.memberOf[key].role);
-    user.memberOf[key].role == "Member"
-      ? setRoleMember(true)
-      : setRoleMember(false);
-    console.log({ roleMember });
-  };
-  return (
-    <>
-      <div className="md:visible invisible">
-        <aside className="w-64" aria-label="Sidebar">
-          <div className="overflow-y-auto absolute z-[-1] border-r-2 py-36 px-3  w-[17%]  h-[900px] max-h-full">
-            <ul className="space-y-2 px-2">
-              <li onClick={() => history("/home")}>
-                <a
-                  href="#"
-                  className=" flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
-                >
-                  <HiOutlineHome size={20} />
+  } else if (error || userDataError) {
+    if (error.status == 401) {
+      removeCookies(userJwt);
+      history("/");
+    }
+    return (
+      <>
+        <ServerDown />
+      </>
+    );
+  } else {
+    const workspace = workspaceData.data.data.workspace;
+    let role;
+    const user = userData.data.data.user;
+    const curWorkspace = user?.memberOf?.filter(
+      (data) => data?.workspace == workspace?._id
+    );
+    if (curWorkspace[0].role) {
+      role = curWorkspace[0].role != "Member";
+    } else {
+      role = true;
+    }
+    console.log({ curWorkspace, role });
+    if (workspace) plan(workspace.plan || "free");
+    socket.emit("joinWorkspace", {
+      workspaceId: workspace._id,
+      userId: user._id,
+      username: user.name,
+    });
 
-                  <span className="ml-3 font-medium text-sm">Home</span>
-                </a>
-              </li>
-              <li onClick={() => history("/notification")}>
-                <a
-                  href="#"
-                  className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
-                >
-                  <AiOutlineNotification size={20} />
+    const handleClick = async (event) => {
+      setAnchorEl(event.currentTarget);
+    };
 
-                  <span className="flex-1 text-sm ml-3 whitespace-nowrap font-medium">
-                    Notification
-                  </span>
-                </a>
-              </li>
-              <li onClick={() => history("/online")}>
-                <a
-                  href="#"
-                  className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
-                >
-                  <HiStatusOnline size={20} />
-                  <span className="flex-1 text-sm ml-3 whitespace-nowrap font-medium">
-                    Online
-                  </span>
-                </a>
-              </li>
-              <li onClick={() => history("/chat")}>
-                <a
-                  href="#"
-                  className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
-                >
-                  <BiChat size={20} />
-                  <span className="flex-1 text-sm ml-3 whitespace-nowrap font-medium">
-                    Chat
-                  </span>
-                </a>
-              </li>
-              <hr />
-              <li className="cursor-pointer" onClick={() => setShowTask("-1")}>
-                <div className="flex justify-between text-sm ml-3 whitespace-nowrap text-[#332778] font-bold ">
-                  <select
-                    name="workspace"
-                    id=""
-                    className="focus:outline-none uppercase overflow-hidden w-[75%]"
-                    onChange={(e) => handleChangeWorkspace(e.target.value)}
-                  >
-                    {user.memberOf.map((data, key) => (
-                      <option value={key} className="py-5 px-5">
-                        {data?.workspace?.Name}
-                      </option>
-                    ))}
-                  </select>
-                  <IoSettingsOutline
-                    size={20}
-                    className="w-[25%]"
-                    onClick={() =>
-                      history(
-                        `/workspace/settings/${workspace?.workspace?._id}`
-                      )
-                    }
-                  />
+    const handleChange = (projectId) => {
+      const data = JSON.parse(localStorage.getItem("Workspace"));
+      history(`/${workspaceId}/department/list/${projectId}`);
+    };
+
+    const handleClose = () => {
+      setAnchorEl(null);
+    };
+
+    const handleChangeWorkspace = (data, role) => {
+      setWorkspaceId(data._id);
+      if (role == "Admin") setRole(true);
+      mutate(workspaceData);
+      localStorage.removeItem("Notification");
+      localStorage.setItem("CurrentWSpace", data._id);
+      history("/redirect");
+      handleClose();
+    };
+
+    const modalWorkspaceList = () => {
+      if (userWorkspaceLoading) {
+        return (
+          <>
+            <LoadingPage />
+          </>
+        );
+      } else if (userWorkspaceError) {
+        return (
+          <>
+            <ServerDown />
+          </>
+        );
+      } else {
+        const workspaces = userWorkspaceList.data.data.workspaces;
+
+        return (
+          <div className=" p-3 ">
+            {workspaces.map((data, key) => (
+              <div
+                className="flex  border-y-gray-100 border-b-2 border-t-2 overflow-hidden p-2"
+                key={key}
+                onClick={() => handleChangeWorkspace(data.workspace, data.role)}
+              >
+                <div className="w-[40px] h-[40px] bg-[#7b68ee] rounded-full border grid place-content-center">
+                  <p className="font-bold text-white uppercase">
+                    {data?.workspace?.Name?.split("")[0]}
+                  </p>
                 </div>
-              </li>
-              {!roleMember && (
-                <li className="bg-gray-200 rounded-lg overflow-hidden mt-2">
+                <div className="ml-3 grid place-content-center overflow-hidden">
+                  <p>{data?.workspace?.Name}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      }
+    };
+    const open = Boolean(anchorEl);
+
+    return (
+      <>
+        <div className="md:visible invisible">
+          <aside className="w-64" aria-label="Sidebar">
+            <div className="overflow-y-auto absolute z-[-1] border-r-2 py-36 px-3  w-[17%]  h-[900px] max-h-full">
+              <ul className="space-y-2 px-2">
+                <li onClick={() => history(`/${workspaceId}/home`)}>
+                  <a
+                    href="#"
+                    className=" flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
+                  >
+                    <HiOutlineHome size={20} />
+
+                    <span className="ml-3 font-medium text-sm">Home</span>
+                  </a>
+                </li>
+                <li
+                  onClick={() => {
+                    setNotificationCount(false);
+                    history(`/${workspaceId}/notification`);
+                  }}
+                >
                   <a
                     href="#"
                     className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
-                    onClick={() => setAddDepartment(true)}
                   >
-                    <GrFormAdd size={20} />
-                    <span className="flex-1  px-2 whitespace-nowrap font-medium lg:text-xs text-[9px] text-gray-500 uppercase">
-                      Add Department
+                    <AiOutlineNotification size={20} />
+
+                    <span className="flex text-sm ml-3 whitespace-nowrap font-medium">
+                      Notification {notificationCount}
+                    </span>
+                    {notificationCount && (
+                      <span class="inline-block w-2 h-2 mx-5 bg-red-600 rounded-full"></span>
+                    )}
+                  </a>
+                </li>
+                <li onClick={() => history(`/${workspaceId}/chat`)}>
+                  <a
+                    href="#"
+                    className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
+                  >
+                    <BiChat size={20} />
+                    <span className="flex-1 text-sm ml-3 whitespace-nowrap font-medium">
+                      Discussion
                     </span>
                   </a>
                 </li>
-              )}
+                <li onClick={() => history(`/${workspaceId}/dashboard`)}>
+                  <a
+                    href="#"
+                    className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
+                  >
+                    <MdLeaderboard size={20} />
+                    <span className="flex-1 text-sm ml-3 whitespace-nowrap font-medium">
+                      Workload
+                    </span>
+                  </a>
+                </li>
+                <hr />
 
-              {workspace &&
-                workspace?.workspace?.department.map((data, i) => (
+                {role && (
+                  <li className="bg-gray-200 rounded-lg overflow-hidden mt-2">
+                    <a
+                      href="#"
+                      className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
+                      onClick={() => setAddDepartment(true)}
+                    >
+                      <GrFormAdd size={20} />
+                      <span className="flex-1  px-2 whitespace-nowrap font-medium lg:text-xs text-[9px] text-gray-500 uppercase">
+                        Add Department
+                      </span>
+                    </a>
+                  </li>
+                )}
+
+                {workspace?.department.map((data, i) => (
                   <li className=" rounded-lg overflow-hidden" key={i}>
                     <a
                       href="#"
@@ -198,7 +282,7 @@ export default function TrialSidebar() {
                     </a>
                     {showTask == `${i}` ? (
                       <ul className="px-5 mt-3">
-                        {!roleMember && (
+                        {role && (
                           <li>
                             <a
                               href="#"
@@ -240,94 +324,147 @@ export default function TrialSidebar() {
                     )}
                   </li>
                 ))}
-              <hr />
-              <li>
-                <a
-                  href="#"
-                  className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
-                  onClick={() => {
-                    history("/leaderboard");
-                  }}
-                >
-                  <MdLeaderboard size={20} />
-                  <span className="flex-1 text-sm ml-3 whitespace-nowrap font-medium">
-                    Leader Board
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
-                  onClick={() => {
-                    history("/profile");
-                  }}
-                >
-                  <ImProfile size={20} />
-                  <span className="flex-1 text-sm ml-3 whitespace-nowrap font-medium">
-                    Profile
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
-                  onClick={() => history("/subscribe")}
-                >
-                  <GiUpgrade size={20} />
-                  <span className="flex-1 text-sm ml-3 whitespace-nowrap font-medium">
-                    Upgrade
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
-                >
-                  <FiLogOut size={20} />
-                  <span
-                    className="flex-1 ml-3 text-sm whitespace-nowrap font-medium"
+                <hr />
+                <li>
+                  <a
+                    href="#"
+                    className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
                     onClick={() => {
-                      localStorage.clear();
-                      history("/");
+                      history(`/${workspaceId}/leaderboard`);
                     }}
                   >
-                    Logout
-                  </span>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </aside>
-      </div>
-      {addDepartment && (
-        <AddDepartment
-          button={"Create"}
-          nextLink={"department"}
-          activeStep={"Create Department"}
-          placeholder={"Enter Department Name"}
-          close={() => {
-            setUser(JSON.parse(localStorage.getItem("User")));
-            setAddDepartment(false);
-          }}
-        />
-      )}
-      {addProject && (
-        <AddDepartment
-          button={"Create"}
-          nextLink={"project"}
-          activeStep={"Create Project"}
-          placeholder={"Enter Project Name"}
-          departmentID={departmentID}
-          close={() => {
-            setUser(JSON.parse(localStorage.getItem("User")));
+                    <MdLeaderboard size={20} />
+                    <span className="flex-1 text-sm ml-3 whitespace-nowrap font-medium">
+                      Members
+                    </span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
+                    onClick={() => {
+                      history(`/${workspaceId}/profile/${user._id}`);
+                    }}
+                  >
+                    <ImProfile size={20} />
+                    <span className="flex-1 text-sm ml-3 whitespace-nowrap font-medium">
+                      Profile
+                    </span>
+                  </a>
+                </li>
+                {workspace.Lead._id == user._id ? (
+                  <li>
+                    <a
+                      href="#"
+                      className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
+                      onClick={() => history(`/${workspaceId}/subscribe`)}
+                    >
+                      <GiUpgrade size={20} />
+                      <span className="flex-1 text-sm ml-3 whitespace-nowrap font-medium">
+                        Upgrade
+                      </span>
+                    </a>
+                  </li>
+                ) : (
+                  ""
+                )}
 
-            setAddProject(false);
-          }}
-        />
-      )}
-    </>
-  );
+                <li>
+                  <a
+                    href="#"
+                    className="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg  hover:bg-gray-100 dark:hover:bg-gray-100"
+                  >
+                    <FiLogOut size={20} />
+                    <span
+                      className="flex-1 ml-3 text-sm whitespace-nowrap font-medium"
+                      onClick={() => {
+                        localStorage.clear();
+                        history("/");
+                      }}
+                    >
+                      Logout
+                    </span>
+                  </a>
+                </li>
+              </ul>
+              <div className="relative ">
+                <div className="fixed bottom-2 flex justify-between bg-white">
+                  <div
+                    className="w-[40px] h-[40px] bg-[#7b68ee] rounded-full border grid place-content-center"
+                    onClick={handleClick}
+                    aria-describedby={id}
+                  >
+                    <p className="font-bold text-white">
+                      {workspace.Name.split("")[0]}
+                    </p>
+                  </div>
+                  <div className="grid place-content-center">
+                    <AiFillCaretDown size={10} color={"gray"} />
+                  </div>
+                  {workspace.Lead._id == user._id ? (
+                    <>
+                      <div className="grid place-content-center ml-1 cursor-pointer">
+                        <div
+                          className="w-16 h-7 bg-gray-200 text-center grid place-content-center"
+                          onClick={() =>
+                            history(`/${workspaceId}/invite/member`)
+                          }
+                        >
+                          <p className="font-medium text-sm text-gray-500 rounded-xl">
+                            Invite
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    ""
+                  )}
+                </div>
+              </div>
+              <Popover
+                id={id}
+                open={open}
+                anchorEl={anchorEl}
+                onClose={handleClose}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "left",
+                }}
+              >
+                <div className="h-44 min-w-full p-5">
+                  {modalWorkspaceList()}
+                </div>
+              </Popover>
+            </div>
+          </aside>
+        </div>
+        {addDepartment && (
+          <AddDepartment
+            button={"Create"}
+            nextLink={"department"}
+            activeStep={"Create Department"}
+            placeholder={"Enter Department Name"}
+            close={() => {
+              mutate(workspaceData);
+              setAddDepartment(false);
+            }}
+          />
+        )}
+        {addProject && (
+          <AddDepartment
+            button={"Create"}
+            nextLink={"project"}
+            activeStep={"Create Project"}
+            placeholder={"Enter Project Name"}
+            departmentID={departmentID}
+            close={() => {
+              mutate(workspaceData);
+              setAddProject(false);
+            }}
+          />
+        )}
+      </>
+    );
+  }
 }

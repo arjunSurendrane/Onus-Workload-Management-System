@@ -16,7 +16,7 @@ export default function Notification() {
   return (
     <div>
       <Navbar heading={"Notification"} active={"h"} />
-      <div className="md:mx-[18%] absolute items-center">
+      <div className="md:mx-[18%] absolute items-center overflow-y-scroll max-h-[87vh]">
         <Notifications />
       </div>
     </div>

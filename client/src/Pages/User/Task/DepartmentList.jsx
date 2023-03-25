@@ -23,13 +23,8 @@ export default function DepartmentList() {
 
   return (
     <div>
-      <Navbar
-        heading={"List"}
-        secHeading={"board"}
-        thirdHeading={"calender"}
-        active={"h"}
-      />
-      <div className="md:mx-[18%] absolute items-center">
+      <Navbar heading={"List"} active={"h"} />
+      <div className="md:mx-[18%] absolute items-center overflow-y-scroll max-h-[87vh]">
         <List />
       </div>
       <MenuButton />

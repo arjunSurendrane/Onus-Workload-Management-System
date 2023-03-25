@@ -3,6 +3,7 @@ import axios from "../../api/index";
 
 const INITIAL_STATE = {
   user: JSON.parse(localStorage.getItem("User")),
+  role: true,
 };
 
 export const userSlice = createSlice({
@@ -17,11 +18,21 @@ export const userSlice = createSlice({
     registerUser: (state, data) => {
       state.user = data.payload;
     },
+    changeRole: (state, action) => {
+      state.role = action.payload;
+    },
     createCookie: () => {},
     deleteCookie: () => {},
   },
 });
 
-export const { createUser, registerUser, createCookie, deleteCookie } =
-  userSlice.actions;
+export const {
+  createUser,
+  registerUser,
+  createCookie,
+  deleteCookie,
+  changeRole,
+} = userSlice.actions;
+
+export const userRole = (state) => state.user.role;
 export default userSlice.reducer;

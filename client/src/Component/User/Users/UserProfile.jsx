@@ -1,7 +1,6 @@
 import { Avatar } from "@mui/material";
-import React from "react";
-import { useState } from "react";
-import { AiOutlineClose, AiOutlineUserAdd } from "react-icons/ai";
+import React, { useState } from "react";
+import { AiOutlineClose } from "react-icons/ai";
 import {
   Tabs,
   TabsHeader,
@@ -9,8 +8,14 @@ import {
   Tab,
   TabPanel,
 } from "@material-tailwind/react";
-import { CgFlagAlt } from "react-icons/cg";
-import { BiMessageDetail } from "react-icons/bi";
+import useSWR from "swr";
+import { sendRequest } from "../../../api/sampleapi";
+import { useCookies } from "react-cookie";
+import { useParams } from "react-router-dom";
+import DoughnutChart from "../Chart/doughnutChart";
+import Task from "../Task/Task";
+import ServerDown from "../../Error/serverDown";
+import LoadingPage from "../../Error/loading";
 
 const content = [
   {
@@ -55,50 +60,223 @@ const content = [
   },
 ];
 
-export default function UserProfile({ closeModal, user }) {
-  const data = [
-    {
-      label: "HTML",
-      value: "html",
-      desc: `It really matters and then like it really doesn't matter.
-          What matters is the people who are sparked by it. And the people 
-          who are like offended by it, it doesn't matter.`,
-    },
-    {
-      label: "React",
-      value: "react",
-      desc: `Because it's about motivating the doers. Because I'm here
-          to follow my dreams and inspire other people to follow their dreams, too.`,
-    },
+export default function UserProfile({ closeModal, userData }) {
+  const [cookies, setCookies] = useCookies();
+  const { id: workspaceId } = useParams();
+  const id = userData._id;
+  const [showModal, setShowModal] = useState(false);
+  const [taskId, setTaskId] = useState("");
 
+  const {
+    isLoading,
+    error,
+    data: userWorkloadData,
+  } = useSWR(
     {
-      label: "Vue",
-      value: "vue",
-      desc: `We're not always in the position that we want to be at.
-          We're constantly growing. We're constantly making mistakes. We're 
-          constantly trying to express ourselves and actualize our dreams.`,
+      id,
+      workspaceId,
+      link: "fetchUserWorkload",
+      cookies: cookies.userJwt,
+      operation: "get",
     },
+    sendRequest
+  );
+  const {
+    isLoading: activityLoading,
+    error: activityError,
+    data: activityData,
+  } = useSWR(
+    {
+      id,
+      link: "findUserActivity",
+      operation: "get",
+      cookies: cookies.useJwt,
+    },
+    sendRequest
+  );
 
-    {
-      label: "Angular",
-      value: "angular",
-      desc: `Because it's about motivating the doers. Because I'm here
-          to follow my dreams and inspire other people to follow their dreams, too.`,
-    },
+  const activityList = () => {
+    if (activityLoading) {
+      return (
+        <>
+          <LoadingPage />
+        </>
+      );
+    } else if (activityError) {
+      return (
+        <>
+          <ServerDown />
+        </>
+      );
+    } else {
+      const activity = activityData.data.data.activity;
+      return (
+        <>
+          <div>
+            <div>
+              <p>Activity</p>
+            </div>
+            {activity.map((data, key) => (
+              <div
+                className=" my-5  w-full flex justify-between px-2 border border-t-4 border-t-[#7b68ee] shadow-lg rounded cursor-pointer"
+                onClick={() => {
+                  setTaskId(data.taskid);
+                  setShowModal(true);
+                }}
+              >
+                <div className="w-full">
+                  <div className="px-2 py-2">
+                    <h6 className="text-[11px] font-medium text-gray-500">
+                      {"Task"}
+                      {">"}
+                      {data.taskName}
+                    </h6>
+                    <h2 className="font-medium">Click Here to Open the task</h2>
+                  </div>
+                  <hr />
+                  <div className="md:px-4 px-1 py-2 flex" key={key}>
+                    <div className="ml-3">
+                      <p className="md:text-sm text-[10px]">{data.taskName}</p>
+                    </div>
+                    <div className="ml-3 bg-gray-200 rounded-2xl px-2 py-0 h-5">
+                      <p className="md:text-[11px] text-[8px] font-medium">
+                        {data.action}
+                      </p>
+                    </div>
+                    <div className="ml-3">
+                      <p className="md:text-sm text-[10px]">{data.message}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      );
+    }
+  };
 
-    {
-      label: "Svelte",
-      value: "svelte",
-      desc: `We're not always in the position that we want to be at.
-          We're constantly growing. We're constantly making mistakes. We're 
-          constantly trying to express ourselves and actualize our dreams.`,
-    },
-  ];
+  const taskList = () => {
+    if (isLoading) {
+      console.log("loading..");
+    } else if (error) {
+      console.log("error...");
+    } else {
+      const tasks = userWorkloadData.data.userbasedWorkload;
+      console.log(tasks);
+      const todo = tasks.filter((data) => data._id == "ToDo");
+      const inProgress = tasks.filter((data) => data._id == "InProgress");
+      const completed = tasks.filter((data) => data._id == "Completed");
+
+      return (
+        <>
+          {" "}
+          {/* TODO */}
+          {todo.map((data, key) => (
+            <>
+              <div className="flex justify-between ">
+                <div className="bg-gray-200 rounded-t-lg px-3 py-1">
+                  <p className="text-xs font-medium text-gray-500 ">TODO</p>
+                </div>
+              </div>
+              {data.data.map((data, key) => (
+                <div className="flex justify-between border shadow-sm py-2">
+                  <div className=" px-3 py-1 cursor-pointer">
+                    <p className="text-sm">{data.taskName}</p>
+                  </div>
+                </div>
+              ))}
+            </>
+          ))}
+          {/* IN PROGRESS */}
+          {inProgress.map((data, key) => (
+            <>
+              <div className="flex justify-between  mt-10">
+                <div className="bg-[#a875ff] rounded-t-lg px-3 py-1">
+                  <p className="text-xs font-medium text-white ">IN PROGRESS</p>
+                </div>
+              </div>
+              {data.data.map((data, key) => (
+                <div className="flex justify-between border shadow-sm py-2">
+                  <div className=" px-3 py-1 cursor-pointer">
+                    <p className="text-sm">{data.taskName}</p>
+                  </div>
+                </div>
+              ))}
+            </>
+          ))}
+          {/* COMPLETED  */}
+          {completed.map((data, key) => (
+            <>
+              {" "}
+              <div className="flex justify-between  mt-10">
+                <div className="bg-[#6bc950] rounded-t-lg px-3 py-1">
+                  <p className="text-xs font-medium text-white">COMPLETED</p>
+                </div>
+              </div>
+              {data.data.map((data, i) => (
+                <div className="flex justify-between border shadow-sm py-2">
+                  <div className=" px-3 py-1 cursor-pointer">
+                    <p className="text-sm">{data.taskName}</p>
+                  </div>
+                </div>
+              ))}
+            </>
+          ))}
+        </>
+      );
+      //close
+    }
+  };
+
+  const perfomanceChart = () => {
+    if (isLoading) {
+      console.log("loading..");
+    } else if (error) {
+      console.log("error...");
+    } else {
+      const tasks = userWorkloadData.data.userbasedWorkload;
+      const chartData = {
+        labels: tasks.map((el) => el._id),
+        datasets: [
+          {
+            label: "Workload",
+            data: tasks.map((el) => el.data.length),
+            backgroundColor: [
+              "rgba(153, 102, 255, 0.2)",
+              "rgba(255, 99, 132, 0.2)",
+              "rgba(54, 162, 235, 0.2)",
+              "rgba(255, 206, 86, 0.2)",
+              "rgba(75, 192, 192, 0.2)",
+              "rgba(255, 159, 64, 0.2)",
+            ],
+            borderColor: [
+              "rgba(153, 102, 255, 1)",
+              "rgba(255, 99, 132, 1)",
+              "rgba(54, 162, 235, 1)",
+              "rgba(255, 206, 86, 1)",
+              "rgba(75, 192, 192, 1)",
+              "rgba(255, 159, 64, 1)",
+            ],
+            borderWidth: 1,
+          },
+        ],
+      };
+      console.log("perfomance chart", chartData);
+      return (
+        <div className="grid place-content-center w-full">
+          <div>
+            <DoughnutChart chartData={chartData} />
+          </div>
+        </div>
+      );
+    }
+  };
   return (
     <div>
       <Tabs value="html">
         <div className="flex justify-center items-center overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none bg-black bg-opacity-60 focus:outline-none">
-          <div className="flex w-[100vw] h-[100vh]">
+          <div className="flex w-[100vw] h-[100vh] overflow-hidden">
             <div className="w-[40%]  h-full bg-white bg-opacity-0"></div>
             <div className="w-[60%] h-full bg-white bg-opacity-0 flex">
               <div className="">
@@ -110,16 +288,22 @@ export default function UserProfile({ closeModal, user }) {
                 </div>
               </div>
 
-              <div className="bg-white w-full border border-t-4 border-t-[#7b68ee] rounded-t-md">
+              <div className="bg-white w-full min-h-[100vh] border border-t-4 border-t-[#7b68ee] rounded-t-md">
                 <div className="w-full  shadow-lg">
                   <div className="w-full flex justify-arounnd py-8 px-8">
                     <div>
-                      <Avatar sx={{ width: 64, height: 64 }}>H</Avatar>
+                      <Avatar sx={{ width: 64, height: 64 }}>
+                        <p className="uppercase font-bold">
+                          {userData?.user[0].name.split("")[0]}
+                        </p>
+                      </Avatar>
                     </div>
                     <div className=" w-full flex justify-between ml-5">
                       <div className="w-[50%]">
                         <div>
-                          <h1 className="text-xl font-medium">{user.name}</h1>
+                          <h1 className="text-xl font-medium capitalize">
+                            {userData?.user[0].name}
+                          </h1>
                         </div>
                         <div className="w-full flex justify-between">
                           <div>
@@ -127,7 +311,7 @@ export default function UserProfile({ closeModal, user }) {
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-600">
-                              arjunrk907@gmail.com
+                              {userData?.user[0].email}
                             </p>
                           </div>
                         </div>
@@ -155,22 +339,14 @@ export default function UserProfile({ closeModal, user }) {
                       </div>
                       <div>
                         <Tab key={"myWork"} value={"myWork"} className="mx-5">
-                          <p className="font-medium">My Work</p>
+                          <p className="font-medium">Work</p>
                         </Tab>
                       </div>
+
                       <div>
                         <Tab
-                          key={"assigned"}
-                          value={"assigned"}
-                          className="mx-5"
-                        >
-                          <p className="font-medium">Assigned</p>
-                        </Tab>
-                      </div>
-                      <div>
-                        <Tab
-                          key={"performance"}
-                          value={"performance"}
+                          key={"perfomance"}
+                          value={"perfomance"}
                           className="mx-5"
                         >
                           <p className="font-medium">Perfomance</p>
@@ -183,118 +359,17 @@ export default function UserProfile({ closeModal, user }) {
                   <div>
                     <TabsBody>
                       <TabPanel key={"activity"} value={"activity"}>
-                        <div>
-                          <div>
-                            <p>Activity</p>
-                          </div>
-                          {content.map((data, key) => (
-                            <div className=" my-5  w-full flex justify-between px-2 border border-t-4 border-t-[#7b68ee] shadow-lg rounded">
-                              <div className="w-full">
-                                <div className="px-2 py-2">
-                                  <h6 className="text-[11px] font-medium text-gray-500">
-                                    {data.department}
-                                    {">"}
-                                    {data.task}
-                                  </h6>
-                                  <h2 className="font-medium">
-                                    Click Here to Open the task
-                                  </h2>
-                                </div>
-                                {data.notifications.map((data, key) => (
-                                  <>
-                                    <hr />
-                                    <div
-                                      className="md:px-4 px-1 py-2 flex"
-                                      key={key}
-                                    >
-                                      <div className="w-7  bg-[#251f49] h-7 rounded-full items-center flex justify-center">
-                                        <p className="text-white text-sm font-bold">
-                                          AB
-                                        </p>
-                                      </div>
-                                      <div className="ml-3">
-                                        <p className="md:text-sm text-[10px]">
-                                          {data.name}
-                                        </p>
-                                      </div>
-                                      <div className="ml-3 bg-gray-200 rounded-2xl px-2 py-0 h-5">
-                                        <p className="md:text-[11px] text-[8px] font-medium">
-                                          {data.content}
-                                        </p>
-                                      </div>
-                                      <div className="ml-3">
-                                        <p className="md:text-sm text-[10px]">
-                                          {data.updatedData}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                        {activityList()}
                       </TabPanel>
                       <TabPanel key={"myWork"} value={"myWork"}>
-                        {/* TODO */}
-                        <div className="flex justify-between ">
-                          <div className="bg-gray-200 rounded-t-lg px-3 py-1">
-                            <p className="text-xs font-medium text-gray-500 ">
-                              TODO
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex justify-between border shadow-sm py-2">
-                          <div className=" px-3 py-1 cursor-pointer">
-                            <p className="text-sm">task name</p>
-                          </div>
-                        </div>
-                        {/* IN PROGRESS */}
-                        <div className="flex justify-between  mt-10">
-                          <div className="bg-[#a875ff] rounded-t-lg px-3 py-1">
-                            <p className="text-xs font-medium text-white ">
-                              IN PROGRESS
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex justify-between border shadow-sm py-2">
-                          <div className=" px-3 py-1 cursor-pointer">
-                            <p className="text-sm">task name</p>
-                          </div>
-                        </div>
-                        {/* COMPLETED  */}
-                        <div className="flex justify-between  mt-10">
-                          <div className="bg-[#6bc950] rounded-t-lg px-3 py-1">
-                            <p className="text-xs font-medium text-white">
-                              COMPLETED
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex justify-between border shadow-sm py-2">
-                          <div className=" px-3 py-1 cursor-pointer">
-                            <p className="text-sm">task name</p>
-                          </div>
-                        </div>
+                        {taskList()}
                       </TabPanel>
-                      <TabPanel key={"assigned"} value={"assigned"}>
-                        <div>
-                          <div>
-                            <p>Task</p>
-                          </div>
-                          <div className=" my-5  w-full flex justify-between px-2 border border-t-4 border-t-[#7b68ee] shadow-lg rounded">
-                            <div className="px-2 py-2 cursor-pointer">
-                              <p className="text-[10px] font-bold text-gray-500 uppercase">
-                                created by Arjun
-                              </p>
-                              <p className="font-medium">task name</p>
-                            </div>
-                            <div className="my-5">
-                              <p className="text-sm font-bold text-gray-500">
-                                oct 5 11:20 PM
-                              </p>
-                            </div>
-                          </div>
-                        </div>
+                      <TabPanel
+                        key={"perfomance"}
+                        value={"perfomance"}
+                        className="overflow-y-scroll"
+                      >
+                        {perfomanceChart()}
                       </TabPanel>
                     </TabsBody>
                   </div>
@@ -304,6 +379,10 @@ export default function UserProfile({ closeModal, user }) {
           </div>
         </div>
       </Tabs>
+      {showModal && (
+        <Task setShowModal={() => setShowModal(false)} taskId={taskId} />
+      )}
     </div>
   );
 }
+// }

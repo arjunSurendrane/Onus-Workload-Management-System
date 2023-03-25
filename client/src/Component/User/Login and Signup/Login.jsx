@@ -45,12 +45,15 @@ export default function Login() {
       if (res.data.status === "success") {
         console.log(res.data.data.user);
         localStorage.setItem("User", JSON.stringify({ ...res.data.data.user }));
-        // localStorage.setItem(
-        //   "Workspace",
-        //   JSON.stringify({ ...res.data.data.workspace })
-        // );
+        console.log("store it to localstorage");
+        localStorage.setItem(
+          "Workspaces",
+          JSON.stringify({ memberOf: res.data.data.user.memberOf })
+        );
+        let CurrentWSpace = res.data.data.user.memberOf[0].workspace._id;
+        localStorage.setItem("CurrentWSpace", CurrentWSpace);
         setCookie("userJwt", res.data.token, { path: "/" });
-        history("/home");
+        history(`/${CurrentWSpace}/home`);
         setLoading(false);
       }
     } catch (error) {
