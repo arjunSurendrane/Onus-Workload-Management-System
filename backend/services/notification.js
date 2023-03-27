@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import { sendNotificationToUser } from "../controller/notification.js";
 import Notification from "../models/nofiticationModal.js";
-
 export const createNotification = async (
   userId,
   userName,

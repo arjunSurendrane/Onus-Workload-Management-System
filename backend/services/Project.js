@@ -71,6 +71,11 @@ export const updateProjectWithTaskData = async (projectId, newTask) => {
   return data;
 };
 
+/**
+ * Group All Tasks
+ * @param {*} id
+ * @returns
+ */
 export const groupAllTask = async (id) => {
   return await Project.aggregate([
     [

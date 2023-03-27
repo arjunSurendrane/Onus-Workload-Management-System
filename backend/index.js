@@ -12,8 +12,11 @@ import connecToPort from "./config/server.js";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import socket from "./config/socket.js";
+import helmet from "helmet";
+
 dotenv.config({ path: "./config.env" });
 const app = express();
+app.use(helmet());
 app.use(bodyParser.json());
 app.use(logger("dev"));
 app.use(express.urlencoded({ extended: true }));

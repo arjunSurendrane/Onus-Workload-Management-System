@@ -52,7 +52,6 @@ export const groupAllTaks = catchAsync(async (req, res, next) => {
 export const createTask = catchAsync(async (req, res, next) => {
   const { projectId, taskName, description, dueDate } = req.body;
   const { workspaceId } = req.params;
-  console.log({ projectId });
   let link;
   if (req.file) {
     const uploadResult = await uploadFile(req.file);
