@@ -1,3 +1,6 @@
+/**
+ * Global error handling middleware
+ */
 export const globalErrorHandling = (err, req, res, next) => {
   console.log(err);
   if (err.status == "fail") {
