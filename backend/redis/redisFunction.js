@@ -32,6 +32,11 @@ export async function updateCacheMemory(key, data) {
   }
 }
 
+/**
+ * Delete cache
+ * @param {String} key
+ * @returns
+ */
 export async function deleteCache(key) {
   try {
     const redisClient = await connectToRedis();
