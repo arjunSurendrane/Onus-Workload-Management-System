@@ -1,4 +1,4 @@
-import Comment from "../models/discussion.js";
+import Comment from '../models/discussion.js'
 
 /**
  * Create New Comment
@@ -15,7 +15,7 @@ export const createComment = async (task, message, userid, userName) => {
       $push: {
         comments: [
           {
-            userid: userid,
+            userid,
             name: userName,
             message,
           },
@@ -23,9 +23,9 @@ export const createComment = async (task, message, userid, userName) => {
       },
     },
     { upsert: true, new: true }
-  );
-};
+  )
+}
 
 export const getComment = async (id) => {
-  return await Comment.findOne({ task: id });
-};
+  return await Comment.findOne({ task: id })
+}

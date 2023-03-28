@@ -1,10 +1,10 @@
-import { GraphQLObjectType, GraphQLString } from "graphql";
+import { GraphQLObjectType, GraphQLString } from 'graphql'
 
 export const WorkSpaceType = new GraphQLObjectType({
-  name: "Workspace",
+  name: 'Workspace',
   fields: () => ({
     name: { type: GraphQLString },
     createdAt: { type: GraphQLString },
-    members,
+    members: { type: GraphQLString },
   }),
-});
+})

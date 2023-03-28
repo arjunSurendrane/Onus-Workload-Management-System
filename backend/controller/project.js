@@ -1,8 +1,8 @@
-import Project from "../models/projectModal.js";
-import { groupAllTask } from "../services/Project.js";
-import { updateNestedDocument } from "../services/Workspace.js";
-import catchAsync from "../utils/catchAsync.js";
-import { response } from "./response.js";
+import Project from '../models/projectModal.js'
+import { groupAllTask } from '../services/Project.js'
+import { updateNestedDocument } from '../services/Workspace.js'
+import catchAsync from '../utils/catchAsync.js'
+import { response } from './response.js'
 
 /**
  * Success response
@@ -12,10 +12,10 @@ import { response } from "./response.js";
  */
 const successresponse = async (res, statusCode, data) => {
   res.status(statusCode).json({
-    status: "success",
+    status: 'success',
     data,
-  });
-};
+  })
+}
 
 /**
  * Create Project
@@ -24,19 +24,19 @@ const successresponse = async (res, statusCode, data) => {
  * @param {*} res - success message with project data
  */
 export const createProject = catchAsync(async (req, res) => {
-  const { projectName, workspaceId, departmentID } = req.body;
+  const { projectName, workspaceId, departmentID } = req.body
   const project = new Project({
     projectName,
-  });
+  })
   const [workspace, projectSave] = await Promise.all([
     updateNestedDocument(
-      { _id: workspaceId, "department._id": departmentID },
-      { $push: { "department.$.project": { projectId: project._id } } }
+      { _id: workspaceId, 'department._id': departmentID },
+      { $push: { 'department.$.project': { projectId: project._id } } }
     ),
     project.save(),
-  ]);
-  response(res, 200, { workspace, projectSave });
-});
+  ])
+  response(res, 200, { workspace, projectSave })
+})
 
 /**
  * Project Data
@@ -45,8 +45,7 @@ export const createProject = catchAsync(async (req, res) => {
  * @param {*} res
  */
 export const projects = catchAsync(async (req, res) => {
-  const projectID = req.params.id;
-  console.log(projectID);
-  const projects = await groupAllTask(projectID);
-  successresponse(res, 200, projects);
-});
+  const projectID = req.params.id
+  const projects = await groupAllTask(projectID)
+  successresponse(res, 200, projects)
+})

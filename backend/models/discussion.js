@@ -1,11 +1,11 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose'
 
-const mongooseType = mongoose.Schema.Types;
+const mongooseType = mongoose.Schema.Types
 
 const discussionSchema = new mongoose.Schema({
   task: {
     type: mongooseType.ObjectId,
-    ref: "Task",
+    ref: 'Task',
   },
   comments: [
     {
@@ -18,7 +18,7 @@ const discussionSchema = new mongoose.Schema({
       },
     },
   ],
-});
+})
 
-const Comment = mongoose.model("Comment", discussionSchema);
-export default Comment;
+const Comment = mongoose.model('Comment', discussionSchema)
+export default Comment

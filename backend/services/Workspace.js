@@ -1,5 +1,5 @@
-import Workspace from "../models/workSpaceModal.js";
-import { getOrSetFunction, updateCacheMemory } from "../redis/redisFunction.js";
+import Workspace from '../models/workSpaceModal.js'
+import { getOrSetFunction, updateCacheMemory } from '../redis/redisFunction.js'
 
 /**
  * Get All Workspace Data
@@ -7,18 +7,16 @@ import { getOrSetFunction, updateCacheMemory } from "../redis/redisFunction.js";
  */
 export const findWorkspace = async () => {
   try {
-    console.log("compiler at findWorkspace");
-    const data = await getOrSetFunction("workspaces", () => {
+    const data = await getOrSetFunction('workspaces', () => {
       return Workspace.find()
-        .populate("Lead")
-        .populate("department.project.projectId");
-    });
-    return data;
+        .populate('Lead')
+        .populate('department.project.projectId')
+    })
+    return data
   } catch (error) {
-    console.log(error);
-    return error;
+    return error
   }
-};
+}
 
 /**
  * Update Workspace
@@ -30,10 +28,10 @@ export const updateWorkspace = async (id, data) => {
   const res = await Workspace.findByIdAndUpdate(id, data, {
     new: true,
     upsert: true,
-  });
-  updateCacheMemory(`workspace-${res._id}`, res);
-  return res;
-};
+  })
+  updateCacheMemory(`workspace-${res._id}`, res)
+  return res
+}
 
 /**
  * update nested object
@@ -43,8 +41,8 @@ export const updateWorkspace = async (id, data) => {
  * @returns {Object}
  */
 export const updateNestedDocument = async (findData, updateData) => {
-  return await Workspace.findOneAndUpdate(findData, updateData, { new: true });
-};
+  return await Workspace.findOneAndUpdate(findData, updateData, { new: true })
+}
 
 /**
  * Get workspace data
@@ -52,8 +50,8 @@ export const updateNestedDocument = async (findData, updateData) => {
  * @returns {Object}
  */
 export const getWorkspaceusingId = async (id) => {
-  return await Workspace.findById(id);
-};
+  return await Workspace.findById(id)
+}
 
 /**
  * Update Plan
@@ -62,6 +60,6 @@ export const getWorkspaceusingId = async (id) => {
  * @returns
  */
 export const updatePlan = async (Lead, plan) => {
-  const data = await Workspace.findOneAndUpdate({ Lead }, { plan });
-  console.log(data);
-};
+  const data = await Workspace.findOneAndUpdate({ Lead }, { plan })
+  return data
+}

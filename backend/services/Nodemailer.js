@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import nodemailer from 'nodemailer'
 
 /**
  * Configure
@@ -7,13 +7,13 @@ import nodemailer from "nodemailer";
  */
 const Configure = () => {
   return nodemailer.createTransport({
-    service: "gmail",
+    service: 'gmail',
     auth: {
       user: `${process.env.EMAIL}`,
       pass: `${process.env.EMAIL_PASSWORD}`,
     },
-  });
-};
+  })
+}
 
 /**
  * Send Mail
@@ -23,12 +23,12 @@ const Configure = () => {
 const sendMail = (mailTransporter, details) => {
   mailTransporter.sendMail(details, (err) => {
     if (err) {
-      console.log({ err });
+      console.log({ err })
     } else {
-      console.log("email has sent");
+      console.log('email has sent')
     }
-  });
-};
+  })
+}
 
 /**
  * Generate verification email
@@ -37,17 +37,17 @@ const sendMail = (mailTransporter, details) => {
  * @param {string} otp
  */
 export const GenerateMail = (email, otp) => {
-  let mailTransporter = Configure();
-  let details = {
+  const mailTransporter = Configure()
+  const details = {
     from: `${process.env.EMAIL}`,
     to: `${email}`,
-    subject: "Email Verification",
-    text: "body of the email",
+    subject: 'Email Verification',
+    text: 'body of the email',
     html: `<h1>Welcome To Onus</h1> 
               <h2>OTP : ${otp}</h2>`,
-  };
-  sendMail(mailTransporter, details);
-};
+  }
+  sendMail(mailTransporter, details)
+}
 
 /**
  * Generate invitation mail
@@ -57,12 +57,11 @@ export const GenerateMail = (email, otp) => {
  * @param {String} id
  */
 export const GenerateIvitationMail = (email, name, id) => {
-  let mailTransporter = Configure();
-  console.log({ email });
-  let details = {
+  const mailTransporter = Configure()
+  const details = {
     from: `${process.env.EMAIL}`,
     to: `${email}`,
-    subject: "Workspace Invitation",
+    subject: 'Workspace Invitation',
     html: ` <div>
         <div style="display: flex; width: 100vw; justify-content: center">
           <h1>${name} Invite you to his workspace</h1>
@@ -85,6 +84,6 @@ export const GenerateIvitationMail = (email, name, id) => {
           </div>
         </div>
       </div>`,
-  };
-  sendMail(mailTransporter, details);
-};
+  }
+  sendMail(mailTransporter, details)
+}

@@ -1,34 +1,34 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose'
 
 const taskSchema = new mongoose.Schema({
   taskName: String,
   description: String,
   Assigned: {
     type: mongoose.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
   },
   createdBy: {
     type: mongoose.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
   },
   projectID: {
     type: mongoose.Types.ObjectId,
-    ref: "Project",
+    ref: 'Project',
   },
   workspaceId: {
     type: mongoose.Types.ObjectId,
-    ref: "Workspace",
+    ref: 'Workspace',
   },
   priority: { type: Boolean, default: false },
   createdDate: Date,
   status: {
     type: String,
-    default: "ToDo",
+    default: 'ToDo',
   },
   update: {
     updatedBy: {
       type: mongoose.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
     updateTime: {
       type: Date,
@@ -44,24 +44,24 @@ const taskSchema = new mongoose.Schema({
   ],
   attachedfiles: [{ link: String }],
   submitfile: String,
-});
+})
 
 taskSchema.pre(/^save/, function (next) {
-  this.populate(["Assigned"]);
-  next();
-});
+  this.populate(['Assigned'])
+  next()
+})
 
-taskSchema.virtual("project", {
-  ref: "Project",
-  localField: "_id",
-  foreignField: "task.taskName",
+taskSchema.virtual('project', {
+  ref: 'Project',
+  localField: '_id',
+  foreignField: 'task.taskName',
   justOne: true,
-});
+})
 
 taskSchema.pre(/^find/, function (next) {
-  this.populate(["Assigned", "projectID", "createdBy"]);
-  next();
-});
+  this.populate(['Assigned', 'projectID', 'createdBy'])
+  next()
+})
 
-const Task = mongoose.model("Task", taskSchema);
-export default Task;
+const Task = mongoose.model('Task', taskSchema)
+export default Task

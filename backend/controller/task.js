@@ -1,16 +1,16 @@
-import Task from "../models/taskModal.js";
+import Task from '../models/taskModal.js'
 import {
   deleteTaskUsingId,
   getTask,
   taskAggregateWith4PipeLine,
   updateTask,
-} from "../services/Task.js";
-import { updateProjectWithTaskData } from "../services/Project.js";
-import { getFileStream, uploadFile } from "../config/s3.js";
-import catchAsync from "../utils/catchAsync.js";
-import { response } from "./response.js";
-import { createNotification } from "../services/notification.js";
-import mongoose from "mongoose";
+} from '../services/Task.js'
+import { updateProjectWithTaskData } from '../services/Project.js'
+import { getFileStream, uploadFile } from '../config/s3.js'
+import catchAsync from '../utils/catchAsync.js'
+import { response } from './response.js'
+import { createNotification } from '../services/notification.js'
+import mongoose from 'mongoose'
 
 /**
  * Group Task
@@ -20,27 +20,27 @@ import mongoose from "mongoose";
  * @param {Object} res - send task data to client
  */
 export const groupAllTaks = catchAsync(async (req, res, next) => {
-  const projectID = req.params.id;
+  const projectID = req.params.id
   const tasks = await taskAggregateWith4PipeLine({
     matchData: {
       projectID: mongoose.Types.ObjectId(`${projectID}`),
     },
     lookupData: {
-      from: "users",
-      localField: "Assigned",
-      foreignField: "_id",
-      as: "AssignedTo",
+      from: 'users',
+      localField: 'Assigned',
+      foreignField: '_id',
+      as: 'AssignedTo',
     },
     projectData: {
-      "AssignedTo.password": 0,
+      'AssignedTo.password': 0,
     },
     groupData: {
-      _id: "$status",
-      data: { $push: "$$ROOT" },
+      _id: '$status',
+      data: { $push: '$$ROOT' },
     },
-  });
-  response(res, 200, { tasks });
-});
+  })
+  response(res, 200, { tasks })
+})
 
 /**
  * Create Task
@@ -50,12 +50,12 @@ export const groupAllTaks = catchAsync(async (req, res, next) => {
  * @param {Object} res
  */
 export const createTask = catchAsync(async (req, res, next) => {
-  const { projectId, taskName, description, dueDate } = req.body;
-  const { workspaceId } = req.params;
-  let link;
+  const { projectId, taskName, description, dueDate } = req.body
+  const { workspaceId } = req.params
+  let link
   if (req.file) {
-    const uploadResult = await uploadFile(req.file);
-    link = uploadResult.Key;
+    const uploadResult = await uploadFile(req.file)
+    link = uploadResult.Key
   }
   const newTask = new Task({
     taskName,
@@ -65,26 +65,26 @@ export const createTask = catchAsync(async (req, res, next) => {
     attachedfiles: [{ link }],
     createdBy: req.user._id,
     projectID: projectId,
-  });
+  })
   const [project, task] = await Promise.all([
     updateProjectWithTaskData(projectId, newTask),
     newTask.save(),
-  ]);
+  ])
   createNotification(
     req.user._id,
     req.user.name,
     workspaceId,
     task._id,
     task.taskName,
-    "add task",
-    "create a new task"
-  );
+    'add task',
+    'create a new task'
+  )
   res.status(200).json({
-    status: "success",
+    status: 'success',
     task,
     project,
-  });
-});
+  })
+})
 
 /**
  * Stream Attached File
@@ -92,10 +92,10 @@ export const createTask = catchAsync(async (req, res, next) => {
  * @description It is used to send attached files from s3 to client
  */
 export const streamAttachedFile = catchAsync(async (req, res, next) => {
-  const key = req.params.key;
-  const readStream = getFileStream(key);
-  readStream.pipe(res);
-});
+  const key = req.params.key
+  const readStream = getFileStream(key)
+  readStream.pipe(res)
+})
 
 /**
  * Get All Task
@@ -103,11 +103,11 @@ export const streamAttachedFile = catchAsync(async (req, res, next) => {
  * @description - It is used to retrieve all task form task collection
  */
 export const allTasks = catchAsync(async (req, res, next) => {
-  const tasks = await Task.find();
+  const tasks = await Task.find()
   res.status(200).json({
     tasks,
-  });
-});
+  })
+})
 
 /**
  * Get Task
@@ -116,13 +116,13 @@ export const allTasks = catchAsync(async (req, res, next) => {
  * @param {Object} req - the req params contain the task id
  */
 export const getOneTask = catchAsync(async (req, res, next) => {
-  const id = req.params.id;
-  const task = await getTask(id);
+  const id = req.params.id
+  const task = await getTask(id)
   res.status(200).json({
-    status: "success",
+    status: 'success',
     task,
-  });
-});
+  })
+})
 
 /**
  * Change Task Status
@@ -132,20 +132,20 @@ export const getOneTask = catchAsync(async (req, res, next) => {
  * @param {object} res - send task and success message to client
  */
 export const changeTaskStatus = catchAsync(async (req, res, next) => {
-  const { status, workspaceId } = req.body;
-  const id = req.params.id;
-  const task = await updateTask(id, { status }, req.user._id);
+  const { status, workspaceId } = req.body
+  const id = req.params.id
+  const task = await updateTask(id, { status }, req.user._id)
   createNotification(
     req.user._id,
     req.user.name,
     workspaceId,
     task._id,
     task.taskName,
-    "change Status",
+    'change Status',
     `change task status to ${status}`
-  );
-  res.json({ status: "success", task });
-});
+  )
+  res.json({ status: 'success', task })
+})
 
 /**
  * Change Priority
@@ -155,20 +155,20 @@ export const changeTaskStatus = catchAsync(async (req, res, next) => {
  * @param {object} res - send task and success message to client
  */
 export const changePriority = catchAsync(async (req, res, next) => {
-  const { priority, workspaceId } = req.body;
-  const { id } = req.params;
-  const task = await updateTask(id, { priority }, req.user._id);
+  const { priority, workspaceId } = req.body
+  const { id } = req.params
+  const task = await updateTask(id, { priority }, req.user._id)
   createNotification(
     req.user._id,
     req.user.name,
     workspaceId,
     task._id,
     task.taskName,
-    "change priority",
+    'change priority',
     `change ${task.taskName} priority`
-  );
-  res.json({ status: "success", task });
-});
+  )
+  res.json({ status: 'success', task })
+})
 
 /**
  * Delete Task
@@ -177,19 +177,19 @@ export const changePriority = catchAsync(async (req, res, next) => {
  * @param {Object} req - req.params.id => taskId
  */
 export const deleteTask = catchAsync(async (req, res, next) => {
-  const { id, workspaceId } = req.params;
-  const task = await deleteTaskUsingId(id);
+  const { id, workspaceId } = req.params
+  const task = await deleteTaskUsingId(id)
   createNotification(
     req.user._id,
     req.user.name,
     workspaceId,
     task._id,
     task.taskName,
-    "delete task",
+    'delete task',
     `delete ${task.taskName}`
-  );
-  res.status(204).json({ status: "success" });
-});
+  )
+  res.status(204).json({ status: 'success' })
+})
 
 /**
  * Assign Task
@@ -199,10 +199,10 @@ export const deleteTask = catchAsync(async (req, res, next) => {
  * @param {object} res - send task and success message to client
  */
 export const assignTask = catchAsync(async (req, res, next) => {
-  const { taskId, userId } = req.body;
-  const task = await updateTask(taskId, { Assigned: userId }, req.user._id);
-  res.status(200).json({ staus: "success", task });
-});
+  const { taskId, userId } = req.body
+  const task = await updateTask(taskId, { Assigned: userId }, req.user._id)
+  res.status(200).json({ staus: 'success', task })
+})
 
 /**
  * Update Task
@@ -211,27 +211,27 @@ export const assignTask = catchAsync(async (req, res, next) => {
  * @param {Object} res - send success messagea and task data
  */
 export const TaskUpdate = catchAsync(async (req, res, next) => {
-  const id = req.params.id;
-  const { taskName, description, dueDate } = req.body;
-  let link;
+  const id = req.params.id
+  const { taskName, description, dueDate } = req.body
+  let link
   if (req.file) {
-    const uploadResult = await uploadFile(req.file);
-    link = uploadResult.Key;
+    const uploadResult = await uploadFile(req.file)
+    link = uploadResult.Key
   }
-  let updateBody;
+  let updateBody
   if (link) {
     updateBody = {
       taskName,
       description,
       dueDate,
       $set: { attachedfiles: { link } },
-    };
+    }
   } else {
-    updateBody = { taskName, description, dueDate };
+    updateBody = { taskName, description, dueDate }
   }
-  const data = await updateTask(id, updateBody, req.user._id);
-  response(res, 200, { task: data });
-});
+  const data = await updateTask(id, updateBody, req.user._id)
+  response(res, 200, { task: data })
+})
 
 /**
  * Add Subtask
@@ -240,31 +240,31 @@ export const TaskUpdate = catchAsync(async (req, res, next) => {
  * @param {Object} res - send success message and task data
  */
 export const addSubTask = catchAsync(async (req, res, next) => {
-  const id = req.params.id;
-  const { name, description } = req.body;
+  const id = req.params.id
+  const { name, description } = req.body
   const data = await updateTask(
     id,
     { $push: { subtasks: { name, description } } },
     req.user._id
-  );
-  response(res, 200, { task: data });
-});
+  )
+  response(res, 200, { task: data })
+})
 
 /**
  * Delete Subtask
  * DELETE /task/:id/:subtaskId
  */
 export const deleteSubtask = catchAsync(async (req, res, next) => {
-  const { id, subtaskId } = req.params;
+  const { id, subtaskId } = req.params
   const data = await updateTask(
     id,
     {
       $pull: { subtasks: { _id: subtaskId } },
     },
     req.user._id
-  );
-  response(res, 204, { task: data });
-});
+  )
+  response(res, 204, { task: data })
+})
 
 /**
  * Submit Task File
@@ -273,9 +273,9 @@ export const deleteSubtask = catchAsync(async (req, res, next) => {
  * @description -  req.file have submit file and store it in s3 bucket using uploadFile function
  */
 export const submitFile = catchAsync(async (req, res) => {
-  const { id } = req.params;
-  const uploadResult = await uploadFile(req.file);
-  let link = uploadResult.Key;
-  const data = await updateTask(id, { submitfile: link }, req.user._id);
-  response(res, 200, { task: data });
-});
+  const { id } = req.params
+  const uploadResult = await uploadFile(req.file)
+  const link = uploadResult.Key
+  const data = await updateTask(id, { submitfile: link }, req.user._id)
+  response(res, 200, { task: data })
+})

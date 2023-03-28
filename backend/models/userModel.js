@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose'
 
 const userSchema = new mongoose.Schema(
   {
@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       unique: true,
-      required: [true, "user must have an email.id"],
+      required: [true, 'user must have an email.id'],
       lowercase: true,
     },
     mobile: Number,
@@ -21,32 +21,32 @@ const userSchema = new mongoose.Schema(
     },
     Plan: {
       type: String,
-      default: "Free Plan",
+      default: 'Free Plan',
     },
     memberOf: [
       {
         workspace: {
           type: mongoose.Types.ObjectId,
-          ref: "Workspace",
+          ref: 'Workspace',
         },
         role: String,
       },
     ],
   },
   { virtuals: true }
-);
+)
 
 // userSchema.pre(/^find/, function (next) {
 //     this.populate("memberOf.workspace");
 //     next();
 // });
 
-userSchema.virtual("task", {
-  ref: "tasks",
-  localField: "_id",
-  foreignField: "Assigned",
+userSchema.virtual('task', {
+  ref: 'tasks',
+  localField: '_id',
+  foreignField: 'Assigned',
   justOne: true,
-});
+})
 
-const User = mongoose.model("User", userSchema);
-export default User;
+const User = mongoose.model('User', userSchema)
+export default User

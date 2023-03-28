@@ -1,13 +1,13 @@
-import User from "../models/userModel.js";
-import { updateCacheMemory } from "../redis/redisFunction.js";
+import User from '../models/userModel.js'
+import { updateCacheMemory } from '../redis/redisFunction.js'
 /**
  * Fetch All Users
  * @returns {array} -  all users
  */
 export const Users = async () => {
-  const data = await User.find();
-  return data;
-};
+  const data = await User.find()
+  return data
+}
 
 /**
  * Update User
@@ -18,9 +18,9 @@ export const Users = async () => {
 export const updateUser = async (email, updatedData) => {
   const data = await User.findOneAndUpdate({ email }, updatedData, {
     new: true,
-  });
-  updateCacheMemory(`user-${data._id}`, data);
-};
+  })
+  updateCacheMemory(`user-${data._id}`, data)
+}
 
 /**
  * Find User With Email
@@ -29,9 +29,9 @@ export const updateUser = async (email, updatedData) => {
  */
 export const findUserWithEmail = async (email) => {
   return await User.findOne({ email })
-    .select("+password")
-    .populate("memberOf.workspace");
-};
+    .select('+password')
+    .populate('memberOf.workspace')
+}
 
 /**
  * Find User Details Without Password
@@ -39,8 +39,8 @@ export const findUserWithEmail = async (email) => {
  * @returns {Object} - return user details
  */
 export const findUserWithoutPassword = async (email) => {
-  return await User.findOne({ email }).populate("memberOf.workspace");
-};
+  return await User.findOne({ email }).populate('memberOf.workspace')
+}
 
 /**
  * Find User
@@ -48,8 +48,8 @@ export const findUserWithoutPassword = async (email) => {
  * @returns {Object} - find user details
  */
 export const findUser = async (email) => {
-  return await User.findOne({ email });
-};
+  return await User.findOne({ email })
+}
 
 /**
  * Find User with id
@@ -57,8 +57,8 @@ export const findUser = async (email) => {
  * @returns - return user details
  */
 export const findUserWithId = async (id) => {
-  return await User.findById(id);
-};
+  return await User.findById(id)
+}
 
 /**
  * Update User
@@ -67,8 +67,8 @@ export const findUserWithId = async (id) => {
  * @returns - return Object
  */
 export const updateUserDataWithId = async (id, updateData) => {
-  return await User.findByIdAndUpdate(id, updateData);
-};
+  return await User.findByIdAndUpdate(id, updateData)
+}
 
 /**
  * Find User Workspaces
@@ -76,8 +76,8 @@ export const updateUserDataWithId = async (id, updateData) => {
  * @returns {Object}
  */
 export const findWorkspaces = async (id) => {
-  return await User.findById(id).populate("memberOf.workspace");
-};
+  return await User.findById(id).populate('memberOf.workspace')
+}
 
 /**
  * Find User Workspaces
@@ -85,8 +85,8 @@ export const findWorkspaces = async (id) => {
  * @returns {Object}
  */
 export const userWorkspaces = async (id) => {
-  return await User.find({ "memberOf.workspace": id }).lean();
-};
+  return await User.find({ 'memberOf.workspace': id }).lean()
+}
 
 /**
  * All user data from database
@@ -96,14 +96,14 @@ export const allUsersFromDatabase = async () => {
   return await User.aggregate([
     {
       $lookup: {
-        from: "tasks",
-        localField: "_id",
-        foreignField: "Assigned",
-        as: "TasksData",
+        from: 'tasks',
+        localField: '_id',
+        foreignField: 'Assigned',
+        as: 'TasksData',
       },
     },
-  ]);
-};
+  ])
+}
 
 /**
  * Update User role
@@ -116,8 +116,8 @@ export const updateRoleInUser = async (id, workdpaceId, role) => {
   return await User.findOneAndUpdate(
     {
       _id: id,
-      "memberOf.workspace": workdpaceId,
+      'memberOf.workspace': workdpaceId,
     },
-    { "memberOf.$.role": role }
-  );
-};
+    { 'memberOf.$.role': role }
+  )
+}

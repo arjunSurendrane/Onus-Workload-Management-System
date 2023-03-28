@@ -3,11 +3,11 @@ import {
   GraphQLID,
   GraphQLObjectType,
   GraphQLString,
-} from "graphql";
+} from 'graphql'
 
 // client type
 export const ClientType = new GraphQLObjectType({
-  name: "Client",
+  name: 'Client',
   fields: () => ({
     id: { type: GraphQLID },
     name: { type: GraphQLString },
@@ -17,4 +17,4 @@ export const ClientType = new GraphQLObjectType({
     block: { type: GraphQLBoolean },
     plan: { type: GraphQLString },
   }),
-});
+})

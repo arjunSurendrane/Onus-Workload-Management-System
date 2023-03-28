@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
-import { sendNotificationToUser } from "../controller/notification.js";
-import Notification from "../models/nofiticationModal.js";
+import mongoose from 'mongoose'
+import { sendNotificationToUser } from '../controller/notification.js'
+import Notification from '../models/nofiticationModal.js'
 export const createNotification = async (
   userId,
   userName,
@@ -10,7 +10,6 @@ export const createNotification = async (
   action,
   message
 ) => {
-  console.log(workspaceId);
   const data = await Notification.create({
     userId,
     userName,
@@ -19,9 +18,9 @@ export const createNotification = async (
     taskName,
     action,
     message,
-  });
-  sendNotificationToUser(workspaceId);
-};
+  })
+  sendNotificationToUser(workspaceId)
+}
 
 /**
  * Get Notification data
@@ -31,10 +30,10 @@ export const createNotification = async (
 export const notifications = async (workspaceId) => {
   return await Notification.aggregate([
     { $match: { workspaceId: mongoose.Types.ObjectId(`${workspaceId}`) } },
-    { $group: { _id: "$taskid", data: { $push: "$$ROOT" } } },
-    { $sort: { "data.createdAt": -1 } },
-  ]);
-};
+    { $group: { _id: '$taskid', data: { $push: '$$ROOT' } } },
+    { $sort: { 'data.createdAt': -1 } },
+  ])
+}
 
 /**
  * Find User Activity
@@ -43,5 +42,5 @@ export const notifications = async (workspaceId) => {
  * @returns
  */
 export const findUserActivity = async (id) => {
-  return await Notification.find({ userId: id }).sort({ createdAt: -1 });
-};
+  return await Notification.find({ userId: id }).sort({ createdAt: -1 })
+}

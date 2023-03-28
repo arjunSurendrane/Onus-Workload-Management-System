@@ -1,10 +1,10 @@
-import mongoose from "mongoose";
-import Task from "../models/taskModal.js";
+import mongoose from 'mongoose'
+import Task from '../models/taskModal.js'
 import {
   deleteCache,
   getOrSetFunction,
   updateCacheMemory,
-} from "../redis/redisFunction.js";
+} from '../redis/redisFunction.js'
 
 /**
  * Aggregate Task data with 4 pipeline
@@ -31,8 +31,8 @@ export const taskAggregateWith4PipeLine = async ({
     {
       $group: groupData,
     },
-  ]);
-};
+  ])
+}
 
 /**
  * Get Task
@@ -41,10 +41,10 @@ export const taskAggregateWith4PipeLine = async ({
  */
 export const getTask = async (id) => {
   const data = await getOrSetFunction(`task-${id}`, () => {
-    return Task.findById(id).lean();
-  });
-  return data;
-};
+    return Task.findById(id).lean()
+  })
+  return data
+}
 
 /**
  * Update Task
@@ -56,7 +56,7 @@ export const updateTask = async (id, data, userid) => {
   const update = {
     updatedBy: userid,
     updateTime: new Date(Date.now()),
-  };
+  }
   const task = await Task.findByIdAndUpdate(
     id,
     { ...data, update },
@@ -65,12 +65,11 @@ export const updateTask = async (id, data, userid) => {
       lean: true,
       upsert: true,
     }
-  );
-  console.log(task);
-  deleteCache(`groupedTask-${task.projectID._id}`);
-  updateCacheMemory(`task-${id}`, task);
-  return task;
-};
+  )
+  deleteCache(`groupedTask-${task.projectID._id}`)
+  updateCacheMemory(`task-${id}`, task)
+  return task
+}
 
 /**
  * Delete Task
@@ -78,12 +77,11 @@ export const updateTask = async (id, data, userid) => {
  * @returns {Object} - deleted task
  */
 export const deleteTaskUsingId = async (id) => {
-  const data = await Task.findByIdAndDelete(id);
-  deleteCache(`task-${id}`);
-  console.log({ data });
-  deleteCache(`groupedTask-${data.projectID._id}`);
-  return data;
-};
+  const data = await Task.findByIdAndDelete(id)
+  deleteCache(`task-${id}`)
+  deleteCache(`groupedTask-${data.projectID._id}`)
+  return data
+}
 
 /**
  * Get Grouped Task Data
@@ -92,7 +90,6 @@ export const deleteTaskUsingId = async (id) => {
  * @returns {Object} - return task data
  */
 export const aggregateData = async ({ matchData, groupData }) => {
-  console.log(matchData);
   return await Task.aggregate([
     {
       $match: matchData,
@@ -100,8 +97,8 @@ export const aggregateData = async ({ matchData, groupData }) => {
     {
       $group: groupData,
     },
-  ]);
-};
+  ])
+}
 
 /**
  * it return workspace workload data with its assigned users and therir workload count
@@ -111,31 +108,31 @@ export const workspaceWorkloadWithAssignedUsers = async (workspaceId) => {
     {
       $match: {
         workspaceId: mongoose.Types.ObjectId(`${workspaceId}`),
-        status: { $ne: "Completed" },
+        status: { $ne: 'Completed' },
         Assigned: { $ne: null },
       },
     },
     {
       $group: {
-        _id: "$Assigned",
+        _id: '$Assigned',
         count: { $sum: 1 },
       },
     },
     {
       $lookup: {
-        from: "users",
-        localField: "_id",
-        foreignField: "_id",
-        as: "user",
+        from: 'users',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'user',
       },
     },
     {
       $project: {
         _id: 1,
         count: 1,
-        "user.name": 1,
-        "user.email": 1,
+        'user.name': 1,
+        'user.email': 1,
       },
     },
-  ]);
-};
+  ])
+}
