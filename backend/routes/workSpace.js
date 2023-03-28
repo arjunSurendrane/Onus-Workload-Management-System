@@ -18,6 +18,7 @@ import {
 import {
   addDepartment,
   addMembers,
+  checkWorkpsacePlanAndPermission,
   createWorkspace,
   deleteMember,
   findMembers,
@@ -50,9 +51,9 @@ router.use(isUser);
 router.post("/", createWorkspace);
 router.post("/:workspaceId/task", upload.single("attachedFile"), createTask);
 router.post("/project", createProject);
-router.post("/invitation/:id", sendInvitation);
+router.post("/invitation/:id", checkWorkpsacePlanAndPermission, sendInvitation);
 router.post("/task/comment/:id", addComment);
-router.patch("/department/:id", addDepartment);
+router.patch("/department/:id", checkWorkpsacePlanAndPermission, addDepartment);
 router.patch("/task/status/:id", changeTaskStatus);
 router.patch("/task/submit/:id", upload.single("file"), submitFile);
 router.patch("/task/subtask/:id", addSubTask);

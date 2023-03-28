@@ -100,13 +100,19 @@ export const getWorkspace = catchAsync(async (req, res, next) => {
  * @param {*} res
  */
 export const addDepartment = catchAsync(async (req, res, next) => {
+  if (req.workspace.plan == "free" && req.workspace.department > 5)
+    return next(new AppError("Please upgrade to business", 403));
+  if (req.workspace.plan == "business" && req.workspace.department > 10)
+    return next(new AppError("Please upgrade to business plus", 403));
   const departmentName = req.body.name;
+  console.log(req.workspace);
   const id = req.params.id;
   const workspace = await updateWorkspace(id, {
     $push: {
       department: { departmentName },
     },
   });
+  if (!workspace) return next(new AppError("workspace not exist", 404));
   response(res, 200, { workspace });
 });
 
@@ -142,6 +148,10 @@ export const addMembers = catchAsync(async (req, res, next) => {
  * @param {*} res
  */
 export const sendInvitation = catchAsync(async (req, res, next) => {
+  if (req.workspace.plan == "free" && req.workspace.members > 5)
+    return next(new AppError("Please upgrade to business", 403));
+  if (req.workspace.plan == "business" && req.workspace.members > 10)
+    return next(new AppError("Please upgrade to business plus", 403));
   const workspaceId = req.params.id;
   const { memberEmail, role } = req.body;
   const user = await findUserWithoutPassword(memberEmail);
@@ -238,3 +248,24 @@ export const updateRole = catchAsync(async (req, res) => {
   const update = await updateRoleInUser(userId, id, role);
   response(res, 200, { update });
 });
+
+/**
+ * Middleware for Check plan
+ * @description this middleware is used to check the workpsace plan and counts
+ */
+export const checkWorkpsacePlanAndPermission = catchAsync(
+  async (req, res, next) => {
+    const { id } = req.params;
+    const [workspace, members] = await Promise.all([
+      getWorkspaceusingId(id),
+      userWorkspaces(id),
+    ]);
+    console.log(workspace);
+    req.workspace = {
+      plan: workspace.plan ?? "free",
+      department: workspace.department.length,
+      members: members.length,
+    };
+    next();
+  }
+);
