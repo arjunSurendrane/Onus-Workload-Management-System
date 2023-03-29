@@ -136,3 +136,12 @@ export const workspaceWorkloadWithAssignedUsers = async (workspaceId) => {
     },
   ])
 }
+
+/**
+ * Delete Task With Project id
+ * @param {String} projectID
+ * @returns {Object}
+ */
+export const deleteTaskWithProjectid = async (projectID) => {
+  return await Task.findOneAndDelete({ projectID })
+}

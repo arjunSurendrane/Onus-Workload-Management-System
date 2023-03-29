@@ -21,6 +21,7 @@ import {
   checkWorkpsacePlanAndPermission,
   createWorkspace,
   deleteMember,
+  deleteProject,
   findMembers,
   getWorkspace,
   getWorkspaceWithId,
@@ -64,6 +65,7 @@ router.patch('/task/:id', upload.single('attachedFile'), TaskUpdate)
 router.delete('/:workspaceId/task/:id', deleteTask)
 router.delete('/task/:id/:subtaskId', deleteSubtask)
 router.delete('/member/:id/:memberId', deleteMember)
+router.delete('/:workspaceid/project/:projectid', deleteProject)
 router.get('/', getWorkspace)
 router.get('/members/:id', findMembers)
 router.get('/:id/members/:userId/workload', membersWorkload)

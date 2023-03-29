@@ -1,4 +1,4 @@
-import Project from '../models/taskModal.js'
+import Project from '../models/projectModal.js'
 import {
   deleteCache,
   getOrSetFunction,
@@ -47,8 +47,9 @@ export const UpdateProject = async (id, data) => {
  * @returns {Object} - Deleted project data
  */
 export const DeleteProject = async (id) => {
+  const res = await Project.findByIdAndDelete(id)
   updateCacheMemory(`project-${id}`, null)
-  return await Project.findByIdAndDelete(id)
+  return res
 }
 
 /**
@@ -99,4 +100,11 @@ export const groupAllTask = async (id) => {
       },
     ],
   ])
+}
+
+/**
+ * Delete Project
+ */
+export const deleteProject = async (id) => {
+  return await Project.findByIdAndDelete(id)
 }

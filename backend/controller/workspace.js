@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose, { mongo } from 'mongoose'
 import Project from '../models/projectModal.js'
 import Workspace from '../models/workSpaceModal.js'
 import {
@@ -7,8 +7,10 @@ import {
   updateCacheMemory,
 } from '../redis/redisFunction.js'
 import { GenerateIvitationMail } from '../services/Nodemailer.js'
+import { DeleteProject } from '../services/Project.js'
 import {
   aggregateData,
+  deleteTaskWithProjectid,
   workspaceWorkloadWithAssignedUsers,
 } from '../services/Task.js'
 import {
@@ -263,3 +265,29 @@ export const checkWorkpsacePlanAndPermission = catchAsync(
     next()
   }
 )
+
+/**
+ * Delete Project
+ */
+export const deleteProject = async (req, res, next) => {
+  const { projectid, workspaceid } = req.params
+  const session = await mongoose.startSession()
+  session.startTransaction()
+  try {
+    const res1 = await DeleteProject(projectid)
+    const res2 = await deleteTaskWithProjectid(projectid)
+    const res3 = await updateWorkspace(workspaceid, {
+      department: { $pull: { 'project.projectId': projectid } },
+    })
+    if (res1 && res2 && res3) {
+      await session.commitTransaction()
+      response(res, 200, { message: 'deleted' })
+    } else {
+      session.abortTransaction()
+      next(new AppError('something gone wrong', 404))
+    }
+  } catch (error) {
+    session.abortTransaction()
+    next(error)
+  }
+}
