@@ -82,8 +82,8 @@ export const findWorkspaces = async (id) => {
  * @param {String} id
  * @returns {Object}
  */
-export const userWorkspaces = async (id) => {
-  return await User.find({ 'memberOf.workspace': id }).lean()
+export const userWorkspaces = async (id, limit) => {
+  return await User.find({ 'memberOf.workspace': id }).skip(limit).lean()
 }
 
 /**

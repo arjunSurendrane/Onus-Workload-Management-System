@@ -107,17 +107,13 @@ export default function TrialSidebar() {
       </>
     );
   } else {
-    const workspace = workspaceData.data.data.workspace;
-    let role;
-    const user = userData.data.data.user;
+    const workspace = workspaceData?.data?.data?.workspace;
+    const role = workspaceData?.data?.data?.role;
+    localStorage.setItem("role", role);
+    const user = userData?.data?.data?.user;
     const curWorkspace = user?.memberOf?.filter(
       (data) => data?.workspace == workspace?._id
     );
-    if (curWorkspace[0].role) {
-      role = curWorkspace[0].role != "Member";
-    } else {
-      role = true;
-    }
     console.log({ curWorkspace, role });
     if (workspace) plan(workspace.plan || "free");
     socket.emit("joinWorkspace", {

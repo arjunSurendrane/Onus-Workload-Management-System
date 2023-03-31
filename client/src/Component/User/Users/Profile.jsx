@@ -26,6 +26,7 @@ export default function ProfileView() {
   const [cookies, setCookies] = useCookies();
   const [activity, setActivity] = useState([]);
   const [toDo, setToDo] = useState([]);
+  const [open, setOpen] = useState(1);
   const [inProgress, setInProgress] = useState([]);
   const [completed, setCompleted] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -61,6 +62,7 @@ export default function ProfileView() {
     const description = user.description;
     const onSubmit = (data) => {};
     const fetchActivity = async () => {
+      setOpen(1);
       const res = await sendRequest({
         id: userId,
         link: "findUserActivity",
@@ -71,6 +73,7 @@ export default function ProfileView() {
     };
     console.log({ activity });
     const fetchAssignedTask = async () => {
+      setOpen(2);
       const res = await sendRequest({
         id: userId,
         link: "getAssignedTask",
@@ -84,6 +87,7 @@ export default function ProfileView() {
       setCompleted(data.filter((el) => el._id == "Completed"));
     };
     const charDataSetUp = () => {
+      setOpen(3);
       setChartData({
         datasets: [
           {
@@ -182,6 +186,119 @@ export default function ProfileView() {
       </div>
     );
 
+    const activityLit = () => (
+      <>
+        {activity.length ? (
+          <div>
+            <div>
+              <p>Activity</p>
+            </div>
+            {activity.map((data, key) => (
+              <div
+                className=" my-5  w-full flex justify-between px-2 border border-t-4 border-t-[#7b68ee] shadow-lg rounded cursor-pointer"
+                onClick={() => {
+                  setTaskId(data.taskid);
+                  setShowModal(true);
+                }}
+                key={key}
+              >
+                <div className="w-full">
+                  <div className="px-2 py-2">
+                    <h6 className="text-[11px] font-medium text-gray-500">
+                      {"Task Name"}
+                      {">"}
+                      {data.taskName}
+                    </h6>
+                    <h2 className="font-medium">Click Here to Open the task</h2>
+                  </div>
+
+                  <>
+                    <hr />
+                    <div className="md:px-4 px-1 py-2 flex" key={key}>
+                      <div className="ml-3">
+                        <p className="md:text-sm text-[10px] font-bold">
+                          {data.taskName}
+                        </p>
+                      </div>
+                      <div className="ml-3 bg-gray-200 rounded-2xl px-2 py-0 h-5">
+                        <p className="md:text-[11px] text-[8px] font-medium">
+                          {data.action}
+                        </p>
+                      </div>
+                      <div className="ml-3">
+                        <p className="md:text-sm text-[10px]">{data.message}</p>
+                      </div>
+                    </div>
+                  </>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid place-content-center w-full mt-5">
+            <div className="w-52 h-52 text-center">
+              <img src={noActivity} alt="no activity" />
+              <h1 className="mt-5 font-medium text-sm">No Activity</h1>
+            </div>
+          </div>
+        )}
+      </>
+    );
+
+    const taskListData = () => (
+      <>
+        {tasks.length ? (
+          <>
+            <div>
+              <div className="fmd:mx-14 mx-5 mt-10  w-full px-2 ">
+                {/* TODO */}
+                {toDo.length ? TaskHeading("TODO", "gray-200", "gray-500") : ""}
+                {toDo[0]?.data?.map((data) => taskList(data))}
+
+                {/* IN PROGRESS */}
+                {inProgress.length
+                  ? TaskHeading("IN PROGRESS", "[#a875ff]", "white")
+                  : ""}
+                {inProgress[0]?.data?.map((data) => taskList(data))}
+
+                {/* COMPLETED  */}
+                {completed.length
+                  ? TaskHeading("COMPLETED", "[#6bc950]", "white")
+                  : ""}
+                {completed[0]?.data?.map((data) => taskList(data))}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="grid place-content-center w-full mt-10">
+            <div className="w-52 h-52 text-center">
+              <img src={noTaskImg} alt="no task image" />
+              <h1 className="mt-5 font-medium text-sm">No Task Assigned</h1>
+            </div>
+          </div>
+        )}
+      </>
+    );
+
+    const perfomanceList = () => (
+      <>
+        {chartData ? (
+          chartData.datasets[0].data.length ? (
+            <PieChart chartData={chartData} />
+          ) : (
+            <div className="grid place-content-center w-full mt-10">
+              <div className="w-52 h-52 text-center">
+                <img src={noTaskImg} alt="no task image" />
+                <h1 className="mt-5 font-medium text-sm">No Workload</h1>
+              </div>
+            </div>
+          )
+        ) : (
+          ""
+        )}
+      </>
+    );
+
     return (
       <div className="md:mx-14 mx-5 mt-10  md:w-[70vw] w-[87vw]  flex justify-between px-2 border border-t-4 border-t-[#7b68ee] shadow-lg rounded">
         <Tabs value="html" className="w-full">
@@ -232,7 +349,9 @@ export default function ProfileView() {
                     <Tab
                       key={"activity"}
                       value={"activity"}
-                      className="mx-5"
+                      className={`mx-5 ${
+                        open == 1 ? "font-medium" : "text-gray-500 "
+                      }`}
                       onClick={fetchActivity}
                     >
                       <p className="font-medium">Activity</p>
@@ -242,7 +361,9 @@ export default function ProfileView() {
                     <Tab
                       key={"myWork"}
                       value={"myWork"}
-                      className="mx-5"
+                      className={`mx-5 ${
+                        open == 2 ? "font-medium" : "text-gray-500 "
+                      }`}
                       onClick={fetchAssignedTask}
                     >
                       <p className="font-medium">My Work</p>
@@ -254,7 +375,9 @@ export default function ProfileView() {
                       <Tab
                         key={"performance"}
                         value={"performance"}
-                        className="mx-5"
+                        className={`mx-5 ${
+                          open == 3 ? "font-medium" : "text-gray-500 "
+                        }`}
                         onClick={charDataSetUp}
                       >
                         <p className="font-medium">Perfomance</p>
@@ -268,128 +391,17 @@ export default function ProfileView() {
             </div>
             <div className="w-full">
               <div className="overflow-y-scroll max-h-[30rem] overflow-x-hidden">
-                <TabsBody>
+                <div>
                   <TabPanel key={"activity"} value={"activity"}>
-                    {activity.length ? (
-                      <div>
-                        <div>
-                          <p>Activity</p>
-                        </div>
-                        {activity.map((data, key) => (
-                          <div
-                            className=" my-5  w-full flex justify-between px-2 border border-t-4 border-t-[#7b68ee] shadow-lg rounded cursor-pointer"
-                            onClick={() => {
-                              setTaskId(data.taskid);
-                              setShowModal(true);
-                            }}
-                            key={key}
-                          >
-                            <div className="w-full">
-                              <div className="px-2 py-2">
-                                <h6 className="text-[11px] font-medium text-gray-500">
-                                  {"Task Name"}
-                                  {">"}
-                                  {data.taskName}
-                                </h6>
-                                <h2 className="font-medium">
-                                  Click Here to Open the task
-                                </h2>
-                              </div>
-
-                              <>
-                                <hr />
-                                <div
-                                  className="md:px-4 px-1 py-2 flex"
-                                  key={key}
-                                >
-                                  <div className="ml-3">
-                                    <p className="md:text-sm text-[10px] font-bold">
-                                      {data.taskName}
-                                    </p>
-                                  </div>
-                                  <div className="ml-3 bg-gray-200 rounded-2xl px-2 py-0 h-5">
-                                    <p className="md:text-[11px] text-[8px] font-medium">
-                                      {data.action}
-                                    </p>
-                                  </div>
-                                  <div className="ml-3">
-                                    <p className="md:text-sm text-[10px]">
-                                      {data.message}
-                                    </p>
-                                  </div>
-                                </div>
-                              </>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="grid place-content-center w-full mt-5">
-                        <div className="w-52 h-52 text-center">
-                          <img src={noActivity} alt="no activity" />
-                          <h1 className="mt-5 font-medium text-sm">
-                            No Activity
-                          </h1>
-                        </div>
-                      </div>
-                    )}
+                    {open == 1 && activityLit()}
                   </TabPanel>
-
                   <TabPanel key={"myWork"} value={"myWork"}>
-                    {tasks.length ? (
-                      <>
-                        <div>
-                          <div className="fmd:mx-14 mx-5 mt-10  w-full px-2 ">
-                            {/* TODO */}
-                            {toDo.length
-                              ? TaskHeading("TODO", "gray-200", "gray-500")
-                              : ""}
-                            {toDo[0]?.data?.map((data) => taskList(data))}
-
-                            {/* IN PROGRESS */}
-                            {inProgress.length
-                              ? TaskHeading("IN PROGRESS", "[#a875ff]", "white")
-                              : ""}
-                            {inProgress[0]?.data?.map((data) => taskList(data))}
-
-                            {/* COMPLETED  */}
-                            {completed.length
-                              ? TaskHeading("COMPLETED", "[#6bc950]", "white")
-                              : ""}
-                            {completed[0]?.data?.map((data) => taskList(data))}
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="grid place-content-center w-full mt-10">
-                        <div className="w-52 h-52 text-center">
-                          <img src={noTaskImg} alt="no task image" />
-                          <h1 className="mt-5 font-medium text-sm">
-                            No Task Assigned
-                          </h1>
-                        </div>
-                      </div>
-                    )}
+                    {open == 2 && taskListData()}
                   </TabPanel>
                   <TabPanel key={"performance"} value={"performance"}>
-                    {chartData ? (
-                      chartData.datasets[0].data.length ? (
-                        <PieChart chartData={chartData} />
-                      ) : (
-                        <div className="grid place-content-center w-full mt-10">
-                          <div className="w-52 h-52 text-center">
-                            <img src={noTaskImg} alt="no task image" />
-                            <h1 className="mt-5 font-medium text-sm">
-                              No Workload
-                            </h1>
-                          </div>
-                        </div>
-                      )
-                    ) : (
-                      ""
-                    )}
+                    {open == 3 && perfomanceList()}
                   </TabPanel>
-                  <TabPanel key={"edit"} value="edit">
+                  {/* <TabPanel key={"edit"} value="edit">
                     <div>
                       <div>Edit</div>
                       <div>
@@ -430,8 +442,8 @@ export default function ProfileView() {
                         </form>
                       </div>
                     </div>
-                  </TabPanel>
-                </TabsBody>
+                  </TabPanel> */}
+                </div>
               </div>
             </div>
           </div>

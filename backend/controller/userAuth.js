@@ -128,11 +128,14 @@ export const verifyOtp = async (req, res) => {
       Otp.find({ email }),
       findUser(email),
     ])
+    console.log(emailOtp.length)
     if (!emailOtp.length) return errorResponse(res, 401, 'invalid otp')
     const length = emailOtp.length
+    console.log(otp, emailOtp[length - 1].otp)
     if (!(otp == emailOtp[length - 1].otp))
       return errorResponse(res, 401, 'invalid otp')
     successresponse(res, 200, user)
+    console.log('here')
     await Otp.deleteMany({ email })
   } catch (error) {
     errorResponse(res, 404, `${error}`)

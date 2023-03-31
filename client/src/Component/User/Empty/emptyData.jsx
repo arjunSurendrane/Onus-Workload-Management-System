@@ -10,7 +10,7 @@ export default function EmptyData({ heading }) {
             {" "}
             <h1>{heading}</h1>
           </div>
-          <div>
+          <div className="w-44 h-44 mt-5">
             <img src={EmptyImage} alt="" />
           </div>
         </div>

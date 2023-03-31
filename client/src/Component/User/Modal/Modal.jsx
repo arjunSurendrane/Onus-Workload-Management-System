@@ -43,12 +43,18 @@ export default function Modal({
       try {
         res = await axios.post(api, { email: user.user.email, otp: data });
         console.log(res);
-        if (res.data.status == "success") {
-          setCookie("userJwt", res.data.token, { path: "/" });
-          history("/home");
-        }
+        localStorage.setItem("User", JSON.stringify({ ...res?.data?.data }));
+        localStorage.setItem(
+          "Workspaces",
+          JSON.stringify({ memberOf: res?.data?.data?.memberOf })
+        );
+        let CurrentWSpace = res?.data?.data?.memberOf[0]?.workspace;
+        localStorage.setItem("CurrentWSpace", CurrentWSpace);
+        setCookie("userJwt", res.data.token, { path: "/" });
+        history(`/${CurrentWSpace}/home`);
       } catch (error) {
-        if (error.response.data.status == "fail") {
+        console.log(error);
+        if (error?.response?.data?.status == "fail") {
           setErrorMsg("invalid Otp");
         } else {
           setErrorMsg("something went wrong");

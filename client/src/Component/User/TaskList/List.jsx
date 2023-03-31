@@ -76,7 +76,8 @@ export default function List() {
     );
     return <div>Error</div>;
   } else {
-    const tasks = tasksData?.data?.tasks || [];
+    const tasks = tasksData?.data?.data?.tasks || [];
+    console.log({ tasks });
 
     let inProgress, ToDo, Completed;
 

@@ -42,27 +42,27 @@ export default function Login() {
     try {
       setLoading(true);
       const res = await axios.post("/user/login", data);
-      if (res.data.status === "success") {
-        console.log(res.data.data.user);
-        localStorage.setItem("User", JSON.stringify({ ...res.data.data.user }));
-        console.log("store it to localstorage");
-        localStorage.setItem(
-          "Workspaces",
-          JSON.stringify({ memberOf: res.data.data.user.memberOf })
-        );
-        let CurrentWSpace = res.data.data.user.memberOf[0].workspace._id;
-        localStorage.setItem("CurrentWSpace", CurrentWSpace);
-        setCookie("userJwt", res.data.token, { path: "/" });
-        history(`/${CurrentWSpace}/home`);
-        setLoading(false);
-      }
+      console.log(res.data.data.user);
+      localStorage.setItem(
+        "User",
+        JSON.stringify({ ...res?.data?.data?.user })
+      );
+      localStorage.setItem(
+        "Workspaces",
+        JSON.stringify({ memberOf: res?.data?.data?.user?.memberOf })
+      );
+      let CurrentWSpace = res.data.data.user.memberOf[0].workspace;
+      localStorage.setItem("CurrentWSpace", CurrentWSpace);
+      setCookie("userJwt", res.data.token, { path: "/" });
+      history(`/${CurrentWSpace}/home`);
+      setLoading(false);
     } catch (error) {
       console.log(error);
       if (error?.response?.data?.status == "fail") {
         setError(error?.response?.data?.error);
         setLoading(false);
       } else {
-        setError("error");
+        setError("Something gone wrong");
         setLoading(false);
       }
       setTimeout(() => {

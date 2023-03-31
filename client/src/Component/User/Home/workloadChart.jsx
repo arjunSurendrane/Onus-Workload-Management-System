@@ -6,15 +6,19 @@ import LoadingPage from "../../Error/loading";
 import ServerDown from "../../Error/serverDown";
 import DoughnutChart from "../Chart/doughnutChart";
 import EmptyImage from "../../../assets/rest-image.png";
+import { useParams } from "react-router-dom";
 export default function WorkloadChart() {
   const [cookies, setCookies] = useCookies();
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("User")));
+  const { id } = useParams();
+
   const { isLoading, error, data } = useSWR(
     {
       id: user._id,
       link: "getAssignedTask",
       operation: "get",
       cookies: cookies.useJwt,
+      workspaceId: id,
     },
     sendRequest
   );
@@ -31,6 +35,7 @@ export default function WorkloadChart() {
       </>
     );
   } else {
+    console.log({ data });
     const tasks = data.data.data.assignedTasks;
     console.log(tasks);
     const chartData = {
@@ -43,8 +48,8 @@ export default function WorkloadChart() {
           backgroundColor: [
             "rgba(153, 102, 255, 0.2)",
             "rgba(255, 99, 132, 0.2)",
-            "rgba(54, 162, 235, 0.2)",
             "rgba(255, 206, 86, 0.2)",
+            "rgba(54, 162, 235, 0.2)",
             "rgba(75, 192, 192, 0.2)",
             "rgba(255, 159, 64, 0.2)",
           ],
@@ -69,9 +74,11 @@ export default function WorkloadChart() {
               <h1>Workload</h1>
             </div>
             {tasks.length ? (
-              <DoughnutChart chartData={chartData} />
+              <div className="w-44 h-44">
+                <DoughnutChart chartData={chartData} />
+              </div>
             ) : (
-              <div>
+              <div className="w-44 h-44">
                 <img src={EmptyImage} alt="" />
               </div>
             )}

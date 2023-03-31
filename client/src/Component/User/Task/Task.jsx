@@ -1,29 +1,21 @@
 import React, { useContext, useEffect, useState } from "react";
-import { BiRightArrow } from "react-icons/bi";
 import { AiOutlineUserAdd, AiOutlineCloudUpload } from "react-icons/ai";
 import { CgFlagAlt } from "react-icons/cg";
 import { MdOutlineDeleteOutline } from "react-icons/md";
 import { FcDocument, FcImageFile } from "react-icons/fc";
 import { TbSubtask, TbSend } from "react-icons/tb";
-import { CiEdit } from "react-icons/ci";
 import { Avatar } from "@mui/material";
 import { useForm } from "react-hook-form";
-import { Document, Page } from "react-pdf";
 import moment from "moment";
 import useSWR from "swr";
 import { useCookies } from "react-cookie";
-import {
-  changeStatus,
-  changeTaskPrioriy,
-  fetchTaskData,
-} from "../../../api/apis";
+import { changeStatus, changeTaskPrioriy } from "../../../api/apis";
 import toast, { Toaster } from "react-hot-toast";
 import { RiDeleteBin6Line, RiFlag2Fill } from "react-icons/ri";
 import { url } from "../../../api";
 import { sendRequest } from "../../../api/sampleapi";
 import UserList from "../TaskList/userList";
 import AddSubtask from "./addSubtask";
-import AddTask from "./addTask";
 import { SocketContext } from "../../../App";
 import { useParams } from "react-router-dom";
 import ServerDown from "../../Error/serverDown";
@@ -31,11 +23,9 @@ import LoadingPage from "../../Error/loading";
 
 export default function Task({ setShowModal, taskId, deleteTask }) {
   const { register, handleSubmit } = useForm();
-  const [attachment, setAttachment] = useState([]);
   const [cookies, setCokkies] = useCookies();
   const [showUsers, setShowUsers] = useState(false);
   const [subtask, setSubTask] = useState(false);
-  const [editTask, setEditTask] = useState(false);
   const [comments, setComments] = useState([]);
   const [commentMessage, setCommentMessage] = useState();
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("User")));
@@ -96,7 +86,7 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
     return <div>Error...!</div>;
   } else {
     console.log({ taskDataINTaskPage: task });
-    let taskData = task?.data?.task || {};
+    let taskData = task?.data?.data?.task || {};
     const onSubmit = async (data) => {
       const file = data.target.files[0];
       console.log({ file: [file] });
@@ -343,7 +333,7 @@ export default function Task({ setShowModal, taskId, deleteTask }) {
                       </div>
                       <div className="text-center">
                         <p className="text-[10px]  font-medium text-gray-500">
-                          {taskData?.dueDate.split("T")[0]}
+                          {taskData?.dueDate?.split("T")[0]}
                         </p>
                       </div>
                     </div>

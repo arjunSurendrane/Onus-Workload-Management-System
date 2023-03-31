@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { TbSend } from "react-icons/tb";
 import { useParams } from "react-router-dom";
 import { SocketContext } from "../../../App";
-import EmptyImage from "../../../assets/rest-image.png";
+import EmptyImage from "../../../assets/no-message.svg";
 import moment from "moment";
 
 export default function ChatScreen() {
@@ -72,11 +72,11 @@ export default function ChatScreen() {
             <div>
               <div className="px-5 font-medium">
                 <div>
-                  <p>{"Workspace Name"}</p>
+                  <p>{"Group Discussion"}</p>
                 </div>
               </div>
             </div>
-            <div className="px-5 py-5 mt-5 max-h-[57vh] min-h-[57vh] overflow-y-scroll bg-gray-100">
+            <div className="px-5 py-5 mt-5 max-h-[57vh] min-h-[57vh] overflow-y-scroll  bg-gray-100">
               {chatData.length ? (
                 chatData.map((data, key) => (
                   <div className="flex justify-between mt-3" key={key}>
@@ -105,10 +105,7 @@ export default function ChatScreen() {
                 ))
               ) : (
                 <>
-                  <div className="text-center">
-                    <h1 className="font-medium">No messages</h1>
-                  </div>
-                  <div className="grid place-content-center">
+                  <div className="grid place-content-center w-32 h-32">
                     <img src={EmptyImage} alt="" />
                   </div>
                 </>
