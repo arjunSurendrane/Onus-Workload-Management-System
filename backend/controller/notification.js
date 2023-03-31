@@ -1,10 +1,10 @@
-import { websocketServer } from "../index.js";
-import { notifications } from "../services/notification.js";
+import { websocketServer } from '../index.js'
+import { notifications } from '../services/notification.js'
 
 export const sendNotificationToUser = async (workspaceId) => {
-  const data = await notifications(workspaceId);
-  websocketServer.sendNotification(data, workspaceId);
-};
+  const data = await notifications(workspaceId)
+  websocketServer.sendNotification(data, workspaceId)
+}
 
 /**
  * Find notification with workspaceid
@@ -13,6 +13,6 @@ export const sendNotificationToUser = async (workspaceId) => {
  * @returns
  */
 export const findNotifications = async (workspaceId) => {
-  const data = await notifications(workspaceId);
-  return data;
-};
+  const data = await notifications(workspaceId)
+  return data
+}

@@ -43,7 +43,6 @@ export const login = catchAsync(async (req, res, next) => {
   if (!newUser) return errorResponse(res, 401, 'user doesnot exist')
   const comparePassword = await bcrypt.compare(password, newUser.password)
   if (!comparePassword) return errorResponse(res, 401, 'incorrect password')
-  const workspace = await Workspace.findOne({ Lead: newUser._id })
   const data = {
     user: {
       name: newUser.name,
@@ -89,7 +88,7 @@ export const otpVerification = async (req, res) => {
     const emailOtp = await Otp.find({ email })
     if (!emailOtp.length) return errorResponse(res, 401, 'invalid otp')
     const length = emailOtp.length
-    if (!(otp === emailOtp[length - 1].otp)) {
+    if (!(otp == emailOtp[length - 1].otp)) {
       return errorResponse(res, 401, 'invalid otp')
     }
     const user = new User({ name, email, password: bcryptPassword })
@@ -131,7 +130,7 @@ export const verifyOtp = async (req, res) => {
     ])
     if (!emailOtp.length) return errorResponse(res, 401, 'invalid otp')
     const length = emailOtp.length
-    if (!(otp === emailOtp[length - 1].otp))
+    if (!(otp == emailOtp[length - 1].otp))
       return errorResponse(res, 401, 'invalid otp')
     successresponse(res, 200, user)
     await Otp.deleteMany({ email })

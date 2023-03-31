@@ -28,9 +28,7 @@ export const updateUser = async (email, updatedData) => {
  * @returns {Object} - user details
  */
 export const findUserWithEmail = async (email) => {
-  return await User.findOne({ email })
-    .select('+password')
-    .populate('memberOf.workspace')
+  return await User.findOne({ email }).select('+password')
 }
 
 /**

@@ -1,13 +1,13 @@
-import fetch from "node-fetch";
+import fetch from 'node-fetch'
 /**
  * Set Credentials
  * @returns {Object} - clientid, appSecret, base url
  */
 const credentials = () => {
-  const { CLIENT_ID, APP_SECRET } = process.env;
-  const base = "https://api-m.sandbox.paypal.com";
-  return { CLIENT_ID, APP_SECRET, base };
-};
+  const { CLIENT_ID, APP_SECRET } = process.env
+  const base = 'https://api-m.sandbox.paypal.com'
+  return { CLIENT_ID, APP_SECRET, base }
+}
 
 /**
  * Create Order
@@ -18,37 +18,37 @@ export async function createOrder(data) {
   /**
    * set credentials
    */
-  const { base } = credentials();
+  const { base } = credentials()
   /**
    * generate access token
    */
-  console.log(data);
-  const accessToken = await generateAccessToken();
-  const url = `${base}/v2/checkout/orders`;
-  const amount = Number(data.amount) / 70;
-  console.log(amount);
+  console.log(data)
+  const accessToken = await generateAccessToken()
+  const url = `${base}/v2/checkout/orders`
+  const amount = Number(data.amount) / 70
+  console.log(amount)
   /**
    * send data to paypal api
    */
   const response = await fetch(url, {
-    method: "post",
+    method: 'post',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({
-      intent: "CAPTURE",
+      intent: 'CAPTURE',
       purchase_units: [
         {
           amount: {
-            currency_code: "USD",
+            currency_code: 'USD',
             value: parseInt(amount),
           },
         },
       ],
     }),
-  });
-  return handleResponse(response);
+  })
+  return handleResponse(response)
 }
 
 /**
@@ -60,24 +60,24 @@ export async function capturePayment(orderId) {
   /**
    * set credentials
    */
-  const { base } = credentials();
+  const { base } = credentials()
   /**
    * generate access token
    */
-  const accessToken = await generateAccessToken();
-  const url = `${base}/v2/checkout/orders/${orderId}/capture`;
+  const accessToken = await generateAccessToken()
+  const url = `${base}/v2/checkout/orders/${orderId}/capture`
   /**
    * send data to paypal api
    */
   const response = await fetch(url, {
-    method: "post",
+    method: 'post',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
     },
-  });
+  })
 
-  return handleResponse(response);
+  return handleResponse(response)
 }
 
 /**
@@ -88,21 +88,21 @@ export async function generateAccessToken() {
   /**
    * set credentials
    */
-  const { CLIENT_ID, APP_SECRET, base } = credentials();
-  const auth = Buffer.from(CLIENT_ID + ":" + APP_SECRET).toString("base64");
+  const { CLIENT_ID, APP_SECRET, base } = credentials()
+  const auth = Buffer.from(CLIENT_ID + ':' + APP_SECRET).toString('base64')
   /**
    * send request to paypal api
    */
   const response = await fetch(`${base}/v1/oauth2/token`, {
-    method: "post",
-    body: "grant_type=client_credentials",
+    method: 'post',
+    body: 'grant_type=client_credentials',
     headers: {
       Authorization: `Basic ${auth}`,
     },
-  });
+  })
 
-  const jsonData = await handleResponse(response);
-  return jsonData.access_token;
+  const jsonData = await handleResponse(response)
+  return jsonData.access_token
 }
 
 /**
@@ -112,12 +112,12 @@ export async function generateAccessToken() {
  */
 async function handleResponse(response) {
   if (response.status === 200 || response.status === 201) {
-    return response.json();
+    return response.json()
   }
 
   /**
    * Error response
    */
-  const errorMessage = await response.text();
-  throw new Error(errorMessage);
+  const errorMessage = await response.text()
+  throw new Error(errorMessage)
 }

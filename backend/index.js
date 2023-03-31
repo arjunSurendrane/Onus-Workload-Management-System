@@ -13,6 +13,14 @@ import { Server } from 'socket.io'
 import { createServer } from 'http'
 import Socket from './config/socket.js'
 import helmet from 'helmet'
+import mongoSanitize from 'express-mongo-sanitize'
+import xssClean from 'xss-clean'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+
+const __dirname = path.dirname(__filename)
 
 dotenv.config({ path: './config.env' })
 const app = express()
@@ -37,6 +45,18 @@ export const io = new Server(httpServer, {
 connectToDB()
 
 /**
+ * Sanitize request
+ */
+app.use(mongoSanitize())
+
+app.use(express.static(path.join(__dirname, '../client', 'dist')))
+
+/**
+ *Data sanitization against stite script xss
+ */
+app.use(xssClean())
+
+/**
  * Route setup
  */
 // app.use('/api/auth')
@@ -44,6 +64,10 @@ app.use('/api/admin', adminRoute)
 app.use('/api/user', userRoute)
 app.use('/api/workspace', workSpaceRoute)
 export const websocketServer = new Socket(io)
+
+app.get('/*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client', 'dist', 'index.html'))
+})
 
 /**
  * Connect to port

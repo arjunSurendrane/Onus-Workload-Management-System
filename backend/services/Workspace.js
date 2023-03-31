@@ -24,10 +24,11 @@ export const findWorkspace = async () => {
  * @param {Object} data - updated data in object type
  * @returns {Object}
  */
-export const updateWorkspace = async (id, data) => {
+export const updateWorkspace = async (id, data, session = null) => {
   const res = await Workspace.findByIdAndUpdate(id, data, {
     new: true,
     upsert: true,
+    session,
   })
   updateCacheMemory(`workspace-${res._id}`, res)
   return res

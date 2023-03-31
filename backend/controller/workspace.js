@@ -1,4 +1,4 @@
-import mongoose, { mongo } from 'mongoose'
+import mongoose from 'mongoose'
 import Project from '../models/projectModal.js'
 import Workspace from '../models/workSpaceModal.js'
 import {
@@ -78,7 +78,8 @@ export const createWorkspace = catchAsync(async (req, res, next) => {
       $push: { memberOf: { workspace: workspace._id }, role: 'owner' },
     }),
   ])
-  response(res, 200, { workspaceDB })
+  console.log(workspaceDB)
+  response(res, 200, { id: workspaceDB._id })
 })
 
 /**
@@ -183,6 +184,7 @@ export const deleteMember = catchAsync(async (req, res, next) => {
  */
 export const findMembers = catchAsync(async (req, res, next) => {
   const { id } = req.params
+  console.log(id)
   const members = await userWorkspaces(id)
   response(res, 200, { members })
 })
@@ -274,12 +276,16 @@ export const deleteProject = async (req, res, next) => {
   const session = await mongoose.startSession()
   session.startTransaction()
   try {
-    const res1 = await DeleteProject(projectid)
-    const res2 = await deleteTaskWithProjectid(projectid)
-    const res3 = await updateWorkspace(workspaceid, {
-      department: { $pull: { 'project.projectId': projectid } },
-    })
-    if (res1 && res2 && res3) {
+    const project = await DeleteProject(projectid, session)
+    const task = await deleteTaskWithProjectid(projectid, session)
+    const workspace = await updateWorkspace(
+      workspaceid,
+      {
+        department: { $pull: { 'project.projectId': projectid } },
+      },
+      session
+    )
+    if (project && task && workspace) {
       await session.commitTransaction()
       response(res, 200, { message: 'deleted' })
     } else {

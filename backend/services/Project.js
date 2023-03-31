@@ -46,8 +46,8 @@ export const UpdateProject = async (id, data) => {
  * @param {String} id  - Project _id
  * @returns {Object} - Deleted project data
  */
-export const DeleteProject = async (id) => {
-  const res = await Project.findByIdAndDelete(id)
+export const DeleteProject = async (id, session) => {
+  const res = await Project.findByIdAndDelete(id, { session })
   updateCacheMemory(`project-${id}`, null)
   return res
 }

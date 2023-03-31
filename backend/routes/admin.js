@@ -1,4 +1,4 @@
-import express, { application } from 'express'
+import express from 'express'
 import { adminLogin } from '../controller/adminAuth.js'
 import { BlockUser, getAllUser } from '../controller/admin.js'
 import { isAdmin, isAdminValid } from '../middleware/adminAuth.js'

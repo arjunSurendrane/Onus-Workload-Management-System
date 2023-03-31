@@ -40,9 +40,7 @@ export const taskAggregateWith4PipeLine = async ({
  * @returns {Object} - task data
  */
 export const getTask = async (id) => {
-  const data = await getOrSetFunction(`task-${id}`, () => {
-    return Task.findById(id).lean()
-  })
+  const data = await Task.findById(id).lean()
   return data
 }
 
@@ -142,6 +140,6 @@ export const workspaceWorkloadWithAssignedUsers = async (workspaceId) => {
  * @param {String} projectID
  * @returns {Object}
  */
-export const deleteTaskWithProjectid = async (projectID) => {
-  return await Task.findOneAndDelete({ projectID })
+export const deleteTaskWithProjectid = async (projectID, session) => {
+  return await Task.findOneAndDelete({ projectID }, { session })
 }
