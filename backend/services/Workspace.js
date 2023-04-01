@@ -9,7 +9,6 @@ export const findWorkspace = async (limit) => {
   try {
     const data = await getOrSetFunction('workspaces', () => {
       return Workspace.find()
-        .skip(limit)
         .populate('Lead')
         .populate('department.project.projectId')
     })

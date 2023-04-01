@@ -91,8 +91,10 @@ export const createWorkspace = catchAsync(async (req, res, next) => {
  * @param {*} res
  */
 export const getWorkspace = catchAsync(async (req, res, next) => {
-  const { limit } = req.query
+  let { limit } = req.query
+  if (!limit) limit = 0
   const workspace = await findWorkspace(limit * 10)
+  console.log(workspace)
   successresponse(res, 200, workspace)
 })
 
@@ -187,8 +189,8 @@ export const deleteMember = catchAsync(async (req, res, next) => {
  */
 export const findMembers = catchAsync(async (req, res, next) => {
   const { id } = req.params
-  const { limit } = req.query
-  console.log(id)
+  let { limit } = req.query
+  if (limit) limit = 0
   const members = await userWorkspaces(id, limit * 10)
   response(res, 200, { members })
 })
@@ -198,7 +200,8 @@ export const findMembers = catchAsync(async (req, res, next) => {
  */
 export const membersWorkload = catchAsync(async (req, res, next) => {
   const { id, userId } = req.params
-  const { limit } = req.body
+  let { limit } = req.body
+  if (limit) limit = 0
   const userbasedWorkload = await aggregateData({
     matchData: {
       Assigned: mongoose.Types.ObjectId(`${userId}`),
